@@ -101,10 +101,24 @@ const DEMO_INVITES: Record<string, Invite[]> = {
   ],
 }
 
+const IS_LOCAL = window.location.hostname.endsWith('localhost')
 const PORT = window.location.port
+const BASE_ORIGIN = IS_LOCAL ? '' : `${window.location.protocol}//${window.location.host}`
 
 function urlWithPlan(subdomain: string, plan: Plan, extra = '') {
-  return `http://${subdomain}.localhost:${PORT}?plan=${plan}${extra}`
+  if (IS_LOCAL) {
+    return `http://${subdomain}.localhost:${PORT}?plan=${plan}${extra}`
+  }
+  return `${BASE_ORIGIN}/${subdomain}?plan=${plan}${extra}`
+}
+
+function getRoute(): string {
+  if (IS_LOCAL) {
+    return window.location.hostname.split('.')[0]
+  }
+  // Path-based: /home, /settings, /id, /account, /admin, /components
+  const path = window.location.pathname.split('/')[1] || ''
+  return path || 'home'
 }
 
 function getPlanFromUrl(): Plan {
@@ -1081,7 +1095,7 @@ function ComponentsPage() {
 // ── App — subdomain router ──
 
 function App() {
-  const subdomain = window.location.hostname.split('.')[0]
+  const subdomain = getRoute()
   const [demoPlan, setDemoPlan] = useState<Plan>(getPlanFromUrl)
 
   // When plan changes on home, update URL without reload
