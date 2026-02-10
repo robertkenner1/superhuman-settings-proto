@@ -313,6 +313,12 @@ body {
   background-color: var(--color-background-base-subdued);
 }
 
+/* Close account control labels */
+.close-account-controls label,
+.close-account-controls .gds-input-label {
+  font-weight: var(--font-weight-regular) !important;
+}
+
 .signin-heading {
   font-weight: var(--font-weight-medium) !important;
 }

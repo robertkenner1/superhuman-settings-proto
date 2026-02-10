@@ -8,12 +8,15 @@ import {
   Checkbox,
   BuildingIcon,
   DotsThreeHorizontalIcon,
-  FileArrowDownIcon,
+  Form,
+  FormFooter,
+  FormRow,
 
   LightningFillIcon,
   Heading,
   Icon,
   IconButton,
+  Link,
   LinkIcon,
   LockIcon,
   Logo,
@@ -26,8 +29,8 @@ import {
   StarFillIcon,
   Switch,
   Text,
-  TextField,
   ThemeProvider,
+  TextField,
   Toast,
   UserIcon,
   UsersIcon,
@@ -64,7 +67,7 @@ type SettingsTab =
   | 'profile' | 'preferences' | 'security' | 'connected'
   | 'workspace' | 'signout'
 
-type OverlayView = 'tabs' | 'close-account' | 'close-resolve' | 'close-export' | 'workspace-members'
+type OverlayView = 'tabs' | 'close-account' | 'workspace-members'
 
 const DEMO_TEAMS: Record<Plan, Team[]> = {
   free: [],
@@ -208,7 +211,7 @@ function ProfileSettings({ onCloseAccount, teams }: { onCloseAccount: () => void
         <SettingsCard>
           <SettingsRow
             variant="clickable" icon={CaretLargeRightIcon}
-            label="Close account"
+            label="Delete account"
             description={teams.length > 0 ? 'Remove from all workspaces' : 'Schedule deletion'}
             onClick={onCloseAccount}
           />
@@ -218,19 +221,33 @@ function ProfileSettings({ onCloseAccount, teams }: { onCloseAccount: () => void
   )
 }
 
-const CLOSE_ACCOUNT_PRODUCTS = [
-  { name: 'Coda', description: '12 docs, 3 shared with others' },
-  { name: 'Superhuman', description: '2 email accounts connected' },
-  { name: 'Grammarly', description: 'Custom dictionary, writing stats' },
-]
 
-function CloseAccount({ onBack, onNavigate, teams }: { onBack: () => void; onNavigate: (view: OverlayView) => void; teams: Team[] }) {
+function CloseAccount({ onBack, teams }: { onBack: () => void; teams: Team[] }) {
   const [code, setCode] = useState('')
   const [acknowledged, setAcknowledged] = useState(false)
+  const [codeError, setCodeError] = useState('')
+  const [checkboxError, setCheckboxError] = useState('')
   const email = 'bobby@kenner.com'
-  const canDelete = code.length === 6 && acknowledged
 
-  const blockers = teams.filter(t => t.role === 'admin')
+  const handleDelete = () => {
+    let hasError = false
+    if (code.length !== 6) {
+      setCodeError('Enter the 6-digit code from your email')
+      hasError = true
+    }
+    if (!acknowledged) {
+      setCheckboxError('You must acknowledge to continue')
+      hasError = true
+    }
+    if (hasError) return
+    // proceed with deletion
+  }
+
+  const handleExportRequest = () => {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'export-requested' }, '*')
+    }
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -238,89 +255,46 @@ function CloseAccount({ onBack, onNavigate, teams }: { onBack: () => void; onNav
         <Icon icon={CaretLargeLeftIcon} size="small" accessibilityLabel="" style={{ color: 'var(--color-text-base-subdued)' }} />
         <Text as="span" variant="text-small" color="base-subdued">Profile</Text>
       </button>
-      <PageTitle title="Close account" />
-      <Text as="p" variant="text-small">
-        Your account will be deactivated immediately and permanently deleted after 30 days. You can reactivate anytime during this window.
-        {teams.length > 0 && ' You will also be removed from all workspaces you belong to.'}
-      </Text>
-
-      <SettingsCard>
-        {blockers.length > 0 && (
-          <SettingsRow
-            variant="clickable" icon={CaretLargeRightIcon}
-            label="Resolve"
-            description={`${blockers.length} ${blockers.length === 1 ? 'item' : 'items'}`}
-            onClick={() => onNavigate('close-resolve')}
-          />
-        )}
-        <SettingsRow
-          variant="clickable" icon={CaretLargeRightIcon}
-          label="Export data"
-          description={`${CLOSE_ACCOUNT_PRODUCTS.length} products`}
-          onClick={() => onNavigate('close-export')}
-        />
-      </SettingsCard>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-        <TextField
-          label={`Enter deletion code sent to ${email}`}
-          placeholder="Enter the deletion code"
-          value={code}
-          size="medium"
-          onChange={(v) => setCode(v)}
-        />
-        <Checkbox
-          isSelected={acknowledged}
-          onChange={() => setAcknowledged(prev => !prev)}
-        >
-          I acknowledge that all of my account data will be deleted and want to proceed.
-        </Checkbox>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <Button text="Delete my account" variant="primary" size="small" isDisabled={!canDelete} />
-          <Button text="Cancel" variant="tertiary" size="small" onClick={onBack} />
-        </div>
+      <PageTitle title="Delete your account" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+        <Text as="p" variant="text-small">
+          Once you close your account, you won't be able to access your data. If you need it, <Link href="#" variant="inherit" onClick={(e: React.MouseEvent) => { e.preventDefault(); handleExportRequest() }}>request an export</Link>.
+        </Text>
+        <Text as="p" variant="text-small">
+          We'll deactivate your account now and delete it after 30 days.{teams.length > 0 && ' You will also be removed from all workspaces.'} You can reactivate anytime before then.
+        </Text>
+        <Text as="p" variant="text-small">
+          We sent a verification code to {email} — it expires in 10 minutes.
+        </Text>
       </div>
+
+      <Form className="close-account-controls" spacing="standard" onSubmit={(e) => e.preventDefault()}>
+        <FormRow>
+          <TextField
+            label="Verification code"
+            placeholder="583291"
+            value={code}
+            errorMessage={codeError || undefined}
+            onChange={(v) => { setCode(v); setCodeError('') }}
+          />
+        </FormRow>
+        <FormRow>
+          <Checkbox
+            isSelected={acknowledged}
+            errorMessage={checkboxError || undefined}
+            onChange={() => { setAcknowledged(prev => !prev); setCheckboxError('') }}
+          >
+            I understand this is permanent
+          </Checkbox>
+        </FormRow>
+        <FormFooter>
+          <Button text="Delete my account" variant="primary" size="medium" onClick={handleDelete} />
+        </FormFooter>
+      </Form>
     </div>
   )
 }
 
-function CloseResolveView({ onBack, teams }: { onBack: () => void; teams: Team[] }) {
-  const blockers = teams
-    .filter(t => t.role === 'admin')
-    .map(t => ({ issue: `Sole admin on ${t.name}`, action: 'Transfer ownership' }))
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <button onClick={onBack} className="settings-breadcrumb-link" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-        <Icon icon={CaretLargeLeftIcon} size="small" accessibilityLabel="" style={{ color: 'var(--color-text-base-subdued)' }} />
-        <Text as="span" variant="text-small" color="base-subdued">Close account</Text>
-      </button>
-      <PageTitle title="Resolve before closing" />
-      <SettingsCard>
-        {blockers.map(blocker => (
-          <SettingsRow variant="action" key={blocker.issue} label={blocker.issue} actions={<Button text={blocker.action} variant="secondary" size="small" />} />
-        ))}
-      </SettingsCard>
-    </div>
-  )
-}
-
-function CloseExportView({ onBack }: { onBack: () => void }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <button onClick={onBack} className="settings-breadcrumb-link" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-        <Icon icon={CaretLargeLeftIcon} size="small" accessibilityLabel="" style={{ color: 'var(--color-text-base-subdued)' }} />
-        <Text as="span" variant="text-small" color="base-subdued">Close account</Text>
-      </button>
-      <PageTitle title="Export your data" />
-      <SettingsCard>
-        {CLOSE_ACCOUNT_PRODUCTS.map(product => (
-          <SettingsRow variant="action" key={product.name} label={product.name} description={product.description} actions={<IconButton icon={FileArrowDownIcon} variant="tertiary" size="small" accessibilityLabel="Export" tooltipProps={{ placement: 'top' }} />} />
-        ))}
-      </SettingsCard>
-    </div>
-  )
-}
 
 function PreferencesTab() {
   return (
@@ -654,10 +628,6 @@ function SettingsContent({ plan, teams }: {
     setShowToast(false)
   }
 
-  const backToCloseAccount = () => {
-    setView('close-account')
-  }
-
   const selectWorkspace = (teamId: string) => {
     setActiveTeamId(teamId)
     setActiveTab('workspace')
@@ -718,15 +688,7 @@ function SettingsContent({ plan, teams }: {
         )}
 
         {renderedView === 'close-account' && (
-          <CloseAccount onBack={backToTabs} onNavigate={setView} teams={teams} />
-        )}
-
-        {renderedView === 'close-resolve' && (
-          <CloseResolveView onBack={backToCloseAccount} teams={teams} />
-        )}
-
-        {renderedView === 'close-export' && (
-          <CloseExportView onBack={backToCloseAccount} />
+          <CloseAccount onBack={backToTabs} teams={teams} />
         )}
       </div>
 
@@ -781,7 +743,7 @@ function AccountPage({ plan }: { plan: Plan }) {
       case 'security': return <SecurityTab />
       case 'connected': return <ConnectedAccountsTab />
       case 'signout': return <SignOutTab />
-      case 'close-account': return <CloseAccount onBack={() => { window.location.href = urlWithPlan('account', plan, '&section=profile') }} onNavigate={() => {}} teams={teams} />
+      case 'close-account': return <CloseAccount onBack={() => { window.location.href = urlWithPlan('account', plan, '&section=profile') }} teams={teams} />
       default: return <ProfileSettings onCloseAccount={() => {}} teams={teams} />
     }
   }
@@ -964,6 +926,7 @@ function SignInPage({ onSignIn }: { onSignIn: (plan: Plan) => void }) {
 function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Plan) => void }) {
   const [isSignedIn, setIsSignedIn] = useState(true)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [exportToast, setExportToast] = useState(false)
   const [signInOpen, setSignInOpen] = useState(false)
 
   const handleSignOut = () => {
@@ -982,6 +945,9 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
         setSignInOpen(false)
         setIsSignedIn(true)
         if (e.data.plan) onPlanChange(e.data.plan)
+      } else if (e.data?.type === 'export-requested') {
+        setExportToast(true)
+        setTimeout(() => setExportToast(false), 5000)
       }
     }
     window.addEventListener('message', handler)
@@ -1047,6 +1013,11 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
             src={urlWithPlan('settings', plan)}
             onClick={(e) => e.stopPropagation()}
           />
+          {exportToast && (
+            <div style={{ position: 'fixed', bottom: 'var(--space-6)', right: 'var(--space-6)', zIndex: 1001 }}>
+              <Toast text="Export requested — we'll email you when it's ready" onClose={() => setExportToast(false)} />
+            </div>
+          )}
         </div>
       )}
 

@@ -129,12 +129,19 @@ The fix: replace the Select trigger with a secondary button showing the current 
 
 The close account flow originally used a multi-step wizard: review screen → confirmation screen, with a "Continue" button connecting them. This was confusing — users didn't realize there were multiple steps, and the "Continue" button drew too much attention to a destructive path.
 
-Consolidated into a single page with optional drill-in subpages:
-- The main page shows consequence text, navigation rows for optional "Resolve" and "Export data" subpages, and the inline deletion form (code input + acknowledgment checkbox + delete button)
-- "Resolve" and "Export data" are subpages accessed via navigation rows (caret), not mandatory steps
-- The deletion form is always visible on the main page — no hidden steps
+Consolidated into a single page: consequence text, an inline data export link, and the deletion form (code + acknowledgment + delete button). Export data was originally a separate subpage with per-product download buttons, then horizontal cards, but ultimately became an inline link ("request a data export") that triggers a toast on the scrim — the most compact option that doesn't clutter the destructive flow.
 
-This makes the entire flow visible at a glance while keeping the optional prep steps (resolving admin conflicts, exporting data) accessible without cluttering the primary view.
+### Deletion Code: Why Numeric, Not a Phrase
+
+Three formats were evaluated for the emailed verification code:
+
+- **6-digit numeric code** (e.g. "583 291") — familiar 2FA pattern, users immediately recognize it as a verification code
+- **Random word phrase** (e.g. "coral-sunset-bridge") — easier to type, no number/letter ambiguity, used by Stripe and Heroku
+- **Typed confirmation** (e.g. "delete my account") — reinforces the action, but doesn't require email verification
+
+The word phrase and numeric code are equally secure — both are one-time tokens validated server-side with rate limiting and expiry. The security doesn't depend on the format being hard to guess.
+
+Decision: **6-digit numeric code.** 2FA trained users to expect numeric codes for email verification. A word phrase, while technically equivalent, looks unfamiliar in this context and may make users question whether the flow is legitimate. Perceived security matters as much as actual security for destructive actions.
 
 ---
 
