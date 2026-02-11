@@ -228,6 +228,7 @@ body {
   border-radius: var(--radius-medium);
   overflow: visible;
   background-color: var(--color-background-base-default);
+  box-shadow: 0 1px 0 0 var(--color-border-base-subdued);
 }
 
 .settings-card > .settings-row,
@@ -241,18 +242,21 @@ body {
   content: '';
   position: absolute;
   bottom: 0;
-  right: 0;
   height: 1px;
   background-color: var(--color-border-base-subdued);
 }
 
 .settings-card > .settings-row:not(.settings-row-clickable):not(:last-child)::after {
   left: var(--space-4);
+  right: var(--space-4);
 }
 
 .settings-card > .settings-row-clickable:not(:last-child)::after {
   left: 0;
+  right: 0;
 }
+
+
 
 /* Clickable row resets */
 .settings-row-clickable {
@@ -572,6 +576,18 @@ button[aria-expanded="true"],
 
 .settings-action-menu .gds-menu-item:active:not(.gds-menu-item-disabled) {
   background-color: var(--neutral-gray-5);
+}
+
+/* ── Compact text field (matches small button height) ── */
+
+.settings-field-compact .gds-input-wrapper {
+  min-height: 28px;
+  height: 28px;
+}
+
+.settings-field-compact .gds-input {
+  padding: 0 var(--space-3);
+  font-size: var(--font-size-text-small);
 }
 
 .member-avatar {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, isValidElement, cloneElement } from 'react'
 import {
   CaretLargeLeftIcon,
   ArrowRightRectangleIcon,
@@ -27,6 +27,7 @@ import {
   SlidersIcon,
 
   StarFillIcon,
+  StarIcon,
   Switch,
   Text,
   ThemeProvider,
@@ -65,17 +66,15 @@ interface Invite {
 
 type SettingsTab =
   | 'profile' | 'preferences' | 'security' | 'connected'
-  | 'workspace' | 'signout'
+  | 'general' | 'members' | 'subscription'
+  | 'signout'
 
-type OverlayView = 'tabs' | 'close-account' | 'workspace-members'
+type OverlayView = 'tabs' | 'close-account'
 
 const DEMO_TEAMS: Record<Plan, Team[]> = {
-  free: [],
+  free: [{ id: 't1', name: "Bobby's Organization", planLabel: 'Free', role: 'admin' }],
   pro: [{ id: 't1', name: "Bobby's Workspace", planLabel: 'Pro — $10/month per seat', role: 'admin' }],
-  enterprise: [
-    { id: 't2', name: 'Acme Corp', planLabel: 'Enterprise', role: 'member' },
-    { id: 't1', name: "Bobby's Workspace", planLabel: 'Enterprise', role: 'admin' },
-  ],
+  enterprise: [{ id: 't2', name: 'Acme Corp', planLabel: 'Enterprise', role: 'admin' }],
 }
 
 const CURRENT_USER_EMAIL = 'bobby@kenner.com'
@@ -150,7 +149,7 @@ function ContentSection({ label, description, children }: { label: string; descr
 
 type SettingsRowVariant = 'clickable' | 'action'
 
-function SettingsRow({ variant = 'action', label, description, value, icon, actions, overflowActions, onClick }: {
+function SettingsRow({ variant = 'action', label, description, value, icon, actions, overflowActions, onClick, external }: {
   variant?: SettingsRowVariant
   label: string
   description?: string
@@ -159,6 +158,7 @@ function SettingsRow({ variant = 'action', label, description, value, icon, acti
   actions?: React.ReactNode
   overflowActions?: { label: string; onClick?: () => void }[]
   onClick?: () => void
+  external?: boolean
 }) {
   const isClickable = variant === 'clickable'
 
@@ -171,12 +171,16 @@ function SettingsRow({ variant = 'action', label, description, value, icon, acti
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexShrink: 0 }}>
         {isClickable && value && (typeof value === 'string' ? <Text as="p" variant="text-small" color="base-subdued">{value}</Text> : value)}
         {isClickable && icon && <Icon icon={icon} size="small" accessibilityLabel="" style={{ color: 'var(--color-text-base-subdued)' }} />}
-        {!isClickable && actions}
+        {!isClickable && external && actions && isValidElement(actions) && (actions as React.ReactElement<{ text?: string }>).props.text ? (
+          cloneElement(actions as React.ReactElement<{ text: string }>, { text: `${(actions as React.ReactElement<{ text: string }>).props.text} ↗` })
+        ) : (
+          !isClickable && actions
+        )}
         {overflowActions && overflowActions.length > 0 && (
           <div className="settings-action-menu">
             <Menu
               activator={
-                <Button text="" variant="ghost" size="small" iconStart={DotsThreeHorizontalIcon} aria-label="More actions" />
+                <IconButton icon={DotsThreeHorizontalIcon} variant="tertiary" size="small" accessibilityLabel="More actions" />
               }
               accessibilityLabel="More actions"
             >
@@ -412,7 +416,7 @@ function ConnectedAccountsTab() {
   )
 }
 
-function WorkspaceTab({ team, onNavigate }: { team: Team; onNavigate?: (view: OverlayView) => void }) {
+function WorkspaceTab({ team }: { team: Team }) {
   const memberCount = (DEMO_MEMBERS[team.id] ?? []).filter(m => m.status === 'active').length
 
   return (
@@ -423,20 +427,21 @@ function WorkspaceTab({ team, onNavigate }: { team: Team; onNavigate?: (view: Ov
         <SettingsRow variant="action" label="Plan" description={team.planLabel} actions={<Button text="Manage" variant="secondary" size="small" />} />
       </SettingsCard>
 
-      <SettingsCard>
-        <SettingsRow
-          variant="clickable" icon={CaretLargeRightIcon}
-          label="Members"
-          description={`${memberCount} ${memberCount === 1 ? 'member' : 'members'}`}
-          onClick={() => onNavigate?.('workspace-members')}
-        />
-        <SettingsRow variant="clickable" icon={CaretLargeRightIcon} label="Billing" description="Payments and invoices" onClick={() => {}} />
-      </SettingsCard>
+      <ContentSection label="Workspace">
+        <SettingsCard>
+          <SettingsRow
+            variant="clickable" icon={CaretLargeRightIcon}
+            label="Members"
+            description={`${memberCount} ${memberCount === 1 ? 'member' : 'members'}`}
+          />
+          <SettingsRow variant="clickable" icon={CaretLargeRightIcon} label="Billing" description="Payments and invoices" />
+        </SettingsCard>
+      </ContentSection>
 
       {team.role !== 'member' && (
         <ContentSection label="Workspace access">
           <SettingsCard>
-            <SettingsRow variant="clickable" icon={CaretLargeRightIcon} label="Delete workspace" onClick={() => {}} />
+            <SettingsRow variant="clickable" icon={CaretLargeRightIcon} label="Delete workspace" />
           </SettingsCard>
         </ContentSection>
       )}
@@ -502,35 +507,6 @@ function InviteList({ invites }: { invites: Invite[] }) {
   )
 }
 
-function WorkspaceMembersView({ team, onBack }: { team: Team; onBack: () => void }) {
-  const members = DEMO_MEMBERS[team.id] ?? []
-  const invites = DEMO_INVITES[team.id] ?? []
-  const isAdmin = team.role !== 'member'
-  const activeMembers = members.filter(m => m.status === 'active')
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <button onClick={onBack} className="settings-breadcrumb-link" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-        <Icon icon={CaretLargeLeftIcon} size="small" accessibilityLabel="" style={{ color: 'var(--color-text-base-subdued)' }} />
-        <Text as="span" variant="text-small" color="base-subdued">{team.name}</Text>
-      </button>
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <PageTitle title="Members" />
-        {isAdmin && <Button text="Invite" variant="secondary" size="small" iconStart={PlusIcon} />}
-      </div>
-
-      <MemberList members={activeMembers} isAdmin={isAdmin} />
-
-      {isAdmin && invites.length > 0 && (
-        <ContentSection label="Pending invites">
-          <InviteList invites={invites} />
-        </ContentSection>
-      )}
-    </div>
-  )
-}
-
 function SignOutTab() {
   const products = [
     { name: 'Superhuman', email: 'bobby@kenner.com' },
@@ -566,6 +542,70 @@ function SignOutTab() {
   )
 }
 
+function GeneralTab({ orgName, onOrgNameChange }: { orgName: string; onOrgNameChange: (name: string) => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <PageTitle title="General" />
+      <SettingsCard>
+        <SettingsRow
+          variant="action"
+          label="Organization name"
+          actions={
+            <div className="settings-field-compact">
+              <TextField
+                label="Organization name"
+                labelDisplay="hidden"
+                value={orgName}
+                onChange={onOrgNameChange}
+                size="medium"
+              />
+            </div>
+          }
+        />
+      </SettingsCard>
+    </div>
+  )
+}
+
+function OrgMembersTab({ org }: { org: Team }) {
+  const members = (DEMO_MEMBERS[org.id] ?? []).filter(m => m.status === 'active')
+  const invites = DEMO_INVITES[org.id] ?? []
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <PageTitle title="Members" />
+        <Button text="Invite" variant="secondary" size="small" iconStart={PlusIcon} />
+      </div>
+      <MemberList members={members} isAdmin />
+      {invites.length > 0 && (
+        <ContentSection label="Pending invites">
+          <InviteList invites={invites} />
+        </ContentSection>
+      )}
+    </div>
+  )
+}
+
+function SubscriptionTab({ org }: { org: Team }) {
+  const isFree = org.planLabel === 'Free'
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <PageTitle title="Subscription" />
+      <SettingsCard>
+        <SettingsRow
+          variant="action"
+          label={isFree ? 'Free plan' : org.planLabel}
+          description={isFree ? 'Upgrade to access premium features across all products' : 'Manage your subscription and billing'}
+          external
+          actions={<Button text={isFree ? 'Upgrade' : 'Manage'} variant="secondary" size="small" />}
+        />
+      </SettingsCard>
+    </div>
+  )
+}
+
 function EndOfContent() {
   return (
     <div className="settings-end-of-content">
@@ -576,8 +616,7 @@ function EndOfContent() {
 
 // ── Settings content (shared between settings.localhost and the old modal) ──
 
-function SettingsContent({ plan, teams }: {
-  plan: Plan
+function SettingsContent({ teams }: {
   teams: Team[]
 }) {
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile')
@@ -615,19 +654,17 @@ function SettingsContent({ plan, teams }: {
     return () => clearTimeout(timer)
   }, [activeTab, activeTeamId, view])
 
+  const org = teams[0] ?? null
+  const isOrgAdmin = org?.role === 'admin'
+  const [orgName, setOrgName] = useState(org?.name ?? '')
+
   useEffect(() => {
-    if (teams.length > 0 && !teams.find(t => t.id === activeTeamId)) {
-      setActiveTeamId(teams[0].id)
-    }
-    if (teams.length === 0) {
-      setActiveTeamId(null)
-      if (activeTab === 'workspace') {
-        setActiveTab('profile')
-      }
+    if (org) setActiveTeamId(org.id)
+    // If not an admin and on an admin tab, redirect to profile
+    if (!isOrgAdmin && ['general', 'members', 'subscription'].includes(activeTab)) {
+      setActiveTab('profile')
     }
   }, [teams])
-
-  const renderedTeam = teams.find(t => t.id === renderedTeamId) ?? null
 
   const accountItems: { id: SettingsTab; label: string; icon: typeof UserIcon }[] = [
     { id: 'profile', label: 'Profile', icon: UserIcon },
@@ -637,54 +674,42 @@ function SettingsContent({ plan, teams }: {
     { id: 'signout', label: 'Sign out', icon: ArrowRightRectangleIcon },
   ]
 
+  const orgItems: { id: SettingsTab; label: string; icon: typeof UserIcon }[] = [
+    { id: 'general', label: 'General', icon: BuildingIcon },
+    { id: 'members', label: 'Members', icon: UsersIcon },
+    { id: 'subscription', label: 'Subscription', icon: StarIcon },
+  ]
+
   const backToTabs = () => {
     setView('tabs')
     setShowToast(false)
   }
 
-  const selectWorkspace = (teamId: string) => {
-    setActiveTeamId(teamId)
-    setActiveTab('workspace')
-    backToTabs()
-  }
-
-  const canCreateTeam = plan === 'pro' || plan === 'enterprise'
-
-  const accountNavItems = accountItems.map(item => (
-    <Menu.Item
-      key={item.id}
-      icon={item.icon}
-      onClick={() => { setActiveTab(item.id); backToTabs() }}
-      className={activeTab === item.id ? 'settings-nav-active' : undefined}
-    >
-      {item.label}
-    </Menu.Item>
-  ))
+  const makeNavItems = (items: { id: SettingsTab; label: string; icon: typeof UserIcon }[]) =>
+    items.map(item => (
+      <Menu.Item
+        key={item.id}
+        icon={item.icon}
+        onClick={() => { setActiveTab(item.id); backToTabs() }}
+        className={activeTab === item.id ? 'settings-nav-active' : undefined}
+      >
+        {item.label}
+      </Menu.Item>
+    ))
 
   return (
     <div style={{ display: 'flex', flex: 1, minHeight: 0, height: '100%', position: 'relative' }}>
       <nav className="settings-sidebar">
         <ul className="gds-menu-list settings-nav-list">
-          {teams.length > 0 ? (
-            <Menu.Section label="Account">{accountNavItems}</Menu.Section>
-          ) : (
-            accountNavItems
+          <Menu.Section label="Account">{makeNavItems(accountItems)}</Menu.Section>
+          {isOrgAdmin && org && (
+            <Menu.Section label={orgName}>{makeNavItems(orgItems)}</Menu.Section>
           )}
-          {teams.length > 0 && (
-            <Menu.Section label="Workspaces">
-              {teams.map(team => (
-                <Menu.Item
-                  key={team.id}
-                  icon={team.role === 'member' ? BuildingIcon : UsersIcon}
-                  onClick={() => selectWorkspace(team.id)}
-                  className={activeTab === 'workspace' && activeTeamId === team.id ? 'settings-nav-active' : undefined}
-                >
-                  {team.name}
-                </Menu.Item>
-              ))}
-              {canCreateTeam && <Menu.Item key="create" icon={PlusIcon} onClick={() => {}}>Create</Menu.Item>}
-            </Menu.Section>
-          )}
+          <Menu.Section label="Apps">
+            <Menu.Item key="coda" onClick={() => {}}>Coda <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
+            <Menu.Item key="grammarly" onClick={() => {}}>Grammarly <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
+            <Menu.Item key="mail" onClick={() => {}}>Mail <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
+          </Menu.Section>
         </ul>
       </nav>
 
@@ -693,13 +718,11 @@ function SettingsContent({ plan, teams }: {
         {renderedView === 'tabs' && renderedTab === 'preferences' && <PreferencesTab />}
         {renderedView === 'tabs' && renderedTab === 'security' && <SecurityTab />}
         {renderedView === 'tabs' && renderedTab === 'connected' && <ConnectedAccountsTab />}
-        {renderedView === 'tabs' && renderedTab === 'workspace' && renderedTeam && <WorkspaceTab team={renderedTeam} onNavigate={setView} />}
+        {renderedView === 'tabs' && renderedTab === 'general' && org && <GeneralTab orgName={orgName} onOrgNameChange={setOrgName} />}
+        {renderedView === 'tabs' && renderedTab === 'members' && org && <OrgMembersTab org={org} />}
+        {renderedView === 'tabs' && renderedTab === 'subscription' && org && <SubscriptionTab org={org} />}
         {renderedView === 'tabs' && renderedTab === 'signout' && <SignOutTab />}
         {renderedView === 'tabs' && isScrollable && <EndOfContent />}
-
-        {renderedView === 'workspace-members' && renderedTeam && (
-          <WorkspaceMembersView team={renderedTeam} onBack={backToTabs} />
-        )}
 
         {renderedView === 'close-account' && (
           <CloseAccount onBack={backToTabs} teams={teams} />
@@ -872,7 +895,7 @@ function SettingsPage({ plan }: { plan: Plan }) {
       <button className="settings-page-close" onClick={handleClose} aria-label="Close settings">
         <Icon icon={XIcon} size="small" accessibilityLabel="Close" />
       </button>
-      <SettingsContent plan={plan} teams={teams} />
+      <SettingsContent teams={teams} />
     </div>
   )
 }
@@ -1057,36 +1080,100 @@ function ComponentsPage() {
 
   return (
     <div className="standalone-page">
-      <div className="standalone-page-inner" style={{ maxWidth: 520 }}>
-        <SettingsCard>
-          <SettingsRow variant="clickable" label="Label" description="Description" value="Value" icon={PencilIcon} />
-        </SettingsCard>
+      <div className="standalone-page-inner" style={{ maxWidth: 520, gap: 'var(--space-12)' }}>
+        {/* ── Page header ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <Text as="p" variant="text-xsmall" color="base-subdued" weight="medium">Page header</Text>
+          <PageTitle title="Title" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <PageTitle title="Title" />
+            <Button text="Action" variant="secondary" size="small" />
+          </div>
+        </div>
 
-        <SettingsCard>
-          <SettingsRow variant="action" label="Label" description="Description" actions={<Button text="Action" variant="secondary" size="small" />} />
-        </SettingsCard>
+        {/* ── Group header ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <Text as="p" variant="text-xsmall" color="base-subdued" weight="medium">Group header</Text>
+          <ContentSection label="Header" />
+          <ContentSection label="Header" description="Description" />
+        </div>
 
-        <SettingsCard>
-          <SettingsRow variant="action" label="Label" description="Description" actions={<Switch label="Toggle" labelDisplay="hidden" isSelected={toggleOn} onChange={() => setToggleOn(v => !v)} />} />
-        </SettingsCard>
+        {/* ── Setting ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <Text as="p" variant="text-xsmall" color="base-subdued" weight="medium">Setting</Text>
+          <SettingsCard>
+            <SettingsRow variant="clickable" label="Label" description="Description" value="Value" icon={CaretLargeRightIcon} />
+          </SettingsCard>
+          <SettingsCard>
+            <SettingsRow variant="action" label="Label" description="Description" actions={<Button text="Action" variant="secondary" size="small" />} overflowActions={[{ label: 'Action 2' }, { label: 'Action 3' }]} />
+          </SettingsCard>
+          <SettingsCard>
+            <SettingsRow variant="action" label="Label" description="Description" actions={<Switch label="Toggle" labelDisplay="hidden" isSelected={toggleOn} onChange={() => setToggleOn(v => !v)} />} />
+          </SettingsCard>
+          <SettingsCard>
+            <SettingsRow variant="action" label="Label" description="Description" actions={
+              <div className="settings-action-menu">
+                <Menu
+                  activator={<Button text="Value" variant="secondary" size="small" iconEnd={CaretSmallDownIcon} />}
+                  accessibilityLabel="Select"
+                >
+                  <Menu.Item key="a">Option A</Menu.Item>
+                  <Menu.Item key="b">Option B</Menu.Item>
+                </Menu>
+              </div>
+            } />
+          </SettingsCard>
+          <SettingsCard>
+            <SettingsRow variant="action" label="Label" description="Description" />
+          </SettingsCard>
+          <SettingsCard>
+            <SettingsRow variant="action" label="Label" description="Description" external actions={<Button text="Action" variant="secondary" size="small" />} />
+          </SettingsCard>
+          <SettingsCard>
+            <SettingsRow variant="action" label="Label" actions={
+              <div className="settings-field-compact">
+                <TextField label="Label" labelDisplay="hidden" value="Value" onChange={() => {}} size="medium" />
+              </div>
+            } />
+          </SettingsCard>
+        </div>
 
-        <SettingsCard>
-          <SettingsRow variant="action" label="Label" description="Description" actions={
-            <div className="settings-action-menu">
-              <Menu
-                activator={<Button text="Value" variant="secondary" size="small" iconEnd={CaretSmallDownIcon} />}
-                accessibilityLabel="Select"
-              >
-                <Menu.Item key="a">Option A</Menu.Item>
-                <Menu.Item key="b">Option B</Menu.Item>
-              </Menu>
-            </div>
-          } />
-        </SettingsCard>
+        {/* ── Settings group ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <Text as="p" variant="text-xsmall" color="base-subdued" weight="medium">Settings group</Text>
+          <ContentSection label="Header">
+            <SettingsCard>
+              <SettingsRow variant="clickable" label="Label" description="Description" icon={CaretLargeRightIcon} />
+              <SettingsRow variant="action" label="Label" description="Description" actions={<Button text="Action" variant="secondary" size="small" />} />
+              <SettingsRow variant="action" label="Label" description="Description" actions={<Switch label="Toggle" labelDisplay="hidden" />} />
+            </SettingsCard>
+          </ContentSection>
+        </div>
 
-        <SettingsCard>
-          <SettingsRow variant="action" label="Label" description="Description" />
-        </SettingsCard>
+        {/* ── Settings page ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <Text as="p" variant="text-xsmall" color="base-subdued" weight="medium">Settings page</Text>
+          <PageTitle title="Title" />
+          <SettingsCard>
+            <SettingsRow variant="clickable" label="Label" description="Description" icon={CaretLargeRightIcon} />
+            <SettingsRow variant="action" label="Label" description="Description" actions={<Button text="Action" variant="secondary" size="small" />} />
+            <SettingsRow variant="action" label="Label" description="Description" actions={<Switch label="Toggle" labelDisplay="hidden" />} />
+          </SettingsCard>
+          <ContentSection label="Header" description="Description">
+            <SettingsCard>
+              <SettingsRow variant="clickable" label="Label" description="Description" icon={CaretLargeRightIcon} />
+              <SettingsRow variant="action" label="Label" description="Description" actions={<Button text="Action" variant="secondary" size="small" />} />
+              <SettingsRow variant="action" label="Label" description="Description" actions={<Switch label="Toggle" labelDisplay="hidden" />} />
+            </SettingsCard>
+          </ContentSection>
+          <ContentSection label="Header" description="Description">
+            <SettingsCard>
+              <SettingsRow variant="clickable" label="Label" description="Description" icon={CaretLargeRightIcon} />
+              <SettingsRow variant="action" label="Label" description="Description" actions={<Button text="Action" variant="secondary" size="small" />} />
+              <SettingsRow variant="action" label="Label" description="Description" actions={<Switch label="Toggle" labelDisplay="hidden" />} />
+            </SettingsCard>
+          </ContentSection>
+        </div>
       </div>
     </div>
   )
