@@ -23,6 +23,7 @@ import {
   Logo,
   Menu,
   PencilIcon,
+  PlanTag,
   PlusIcon,
 
   GearIcon,
@@ -1048,7 +1049,7 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)', backgroundColor: 'transparent', borderBottom: 'none', flexShrink: 0 }}>
-        <Logo brand="superhuman" composition="lockup" variant="color-secondary" accessibilityLabel="Superhuman" style={{ transform: 'scale(0.8)', transformOrigin: 'left center' }} />
+        <Logo brand="superhuman" composition="lockup" variant="color-secondary" accessibilityLabel="Superhuman" style={{ transform: 'scale(0.75)', transformOrigin: 'left center' }} />
         {isSignedIn ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
           <IconButton icon={BellIcon} variant="tertiary" size="medium" accessibilityLabel="Notifications" />
@@ -1060,10 +1061,15 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
               accessibilityLabel="Profile menu"
             >
               <div className="profile-menu-user-card">
-                <img src="/img/avatar.png" alt="" className="profile-menu-card-avatar" />
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Text as="p" variant="text-small" weight="medium">Morgan Taylor</Text>
-                  <Text as="p" variant="text-small" color="base-subdued">morgan@taylor.com</Text>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flex: 1, minWidth: 0 }}>
+                  <img src="/img/avatar.png" alt="" className="profile-menu-card-avatar" />
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Text as="p" variant="text-small" weight="medium" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Morgan Taylor</Text>
+                    <Text as="p" variant="text-small" color="base-subdued" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>morgan@taylor.com</Text>
+                  </div>
+                </div>
+                <div style={{ alignSelf: 'flex-start' }}>
+                  <PlanTag variant={plan} size="xsmall" title={plan} />
                 </div>
               </div>
               <Menu.Item key="settings" icon={GearIcon} onClick={() => setSettingsOpen(true)}>Settings</Menu.Item>
@@ -1073,12 +1079,7 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
           </div>
           </div>
         ) : (
-          <button className="profile-menu-button" aria-label="Sign in" onClick={() => setSignInOpen(true)}>
-            <span className="profile-menu-avatar" style={{ backgroundColor: 'var(--neutral-gray-20)' }}>
-              <Icon icon={UserIcon} size="small" accessibilityLabel="" style={{ color: 'var(--color-background-base-default)' }} />
-            </span>
-            <Text as="span" variant="text-small" color="base-subdued">Sign in</Text>
-          </button>
+          <IconButton icon={UserIcon} variant="tertiary" size="medium" accessibilityLabel="Sign in" onClick={() => setSignInOpen(true)} />
         )}
       </nav>
 

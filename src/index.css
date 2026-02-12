@@ -68,7 +68,7 @@ body {
 
 .profile-menu-button-wrapper .gds-menu-list {
   position: static !important;
-  width: 280px;
+  width: 300px;
   background-color: var(--color-background-base-default);
   padding: 0;
   gap: 0;
@@ -125,7 +125,7 @@ body {
 .profile-menu-user-card {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
   padding: var(--space-5);
   border-bottom: 0.5px solid var(--color-border-base-subdued);
 }
