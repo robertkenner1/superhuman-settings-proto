@@ -1012,6 +1012,10 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
   const [exportToast, setExportToast] = useState(false)
   const [signInOpen, setSignInOpen] = useState(false)
 
+  useEffect(() => {
+    document.title = settingsOpen ? 'Settings — Superhuman' : 'Superhuman'
+  }, [settingsOpen])
+
   const handleSignOut = () => {
     setSettingsOpen(false)
     setIsSignedIn(false)
