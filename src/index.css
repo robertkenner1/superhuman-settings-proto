@@ -231,7 +231,7 @@ body {
   transition: opacity 0.15s ease;
   opacity: 1;
   overflow-y: auto;
-  padding: 52px var(--space-10) 0;
+  padding: 47px var(--space-10) 0;
 }
 
 .settings-content-fading {

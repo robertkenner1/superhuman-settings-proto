@@ -131,7 +131,7 @@ function getPlanFromUrl(): Plan {
 }
 
 function PageTitle({ title }: { title: string }) {
-  return <Heading as="h2" variant="heading-small">{title}</Heading>
+  return <Heading as="h2" variant="heading-small" style={{}}>{title}</Heading>
 }
 
 function SettingsCard({ children }: { children: React.ReactNode }) {
@@ -216,7 +216,7 @@ function SettingsRow({ variant = 'action', label, description, value, icon, acti
 
 function ProfileSettings({ onCloseAccount, teams }: { onCloseAccount: () => void; teams: Team[] }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       <PageTitle title="Profile" />
       <SettingsCard>
         <SettingsRow variant="clickable" label="Avatar" icon={PencilIcon} value={
@@ -269,7 +269,7 @@ function CloseAccount({ onBack, teams }: { onBack: () => void; teams: Team[] }) 
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       <button onClick={onBack} className="settings-breadcrumb-link" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
         <Icon icon={CaretLargeLeftIcon} size="small" accessibilityLabel="" style={{ color: 'var(--color-text-base-subdued)' }} />
         <Text as="span" variant="text-small" color="base-subdued">Profile</Text>
@@ -317,7 +317,7 @@ function CloseAccount({ onBack, teams }: { onBack: () => void; teams: Team[] }) 
 
 function PreferencesTab() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       <PageTitle title="Preferences" />
       <SettingsCard>
         <SettingsRow variant="action" label="Dark mode" description="Use dark theme across all products" actions={<Switch label="Dark mode" labelDisplay="hidden" />} />
@@ -350,7 +350,7 @@ function SecurityTab() {
   ]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       <PageTitle title="Security" />
       <SettingsCard>
         <SettingsRow
@@ -396,7 +396,7 @@ function ConnectedAccountsTab() {
   ]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       <PageTitle title="Connected accounts" />
       <SettingsCard>
         {accounts.map(account => (
@@ -423,7 +423,7 @@ function DataPrivacyTab() {
   const [exportRequested, setExportRequested] = useState(false)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       <PageTitle title="Data & privacy" />
       <SettingsCard>
         <SettingsRow
@@ -457,7 +457,7 @@ function WorkspaceTab({ team }: { team: Team }) {
   const memberCount = (DEMO_MEMBERS[team.id] ?? []).filter(m => m.status === 'active').length
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       <PageTitle title={team.name} />
       <SettingsCard>
         <SettingsRow variant="action" label="Workspace name" description={team.name} actions={<Button text="Update" variant="secondary" size="small" />} />
@@ -556,7 +556,7 @@ function SignOutTab() {
   ]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       <PageTitle title="Sign out" />
       <SettingsCard>
         <SettingsRow
@@ -585,7 +585,7 @@ function SignOutTab() {
 
 function GeneralTab({ orgName, onOrgNameChange }: { orgName: string; onOrgNameChange: (name: string) => void }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       <PageTitle title="General" />
       <SettingsCard>
         <SettingsRow
@@ -613,7 +613,7 @@ function OrgMembersTab({ org }: { org: Team }) {
   const invites = DEMO_INVITES[org.id] ?? []
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <PageTitle title="Members" />
         <Button text="Invite" variant="secondary" size="small" iconStart={PlusIcon} />
@@ -632,7 +632,7 @@ function SubscriptionTab({ org }: { org: Team }) {
   const isFree = org.planLabel === 'Free'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       <PageTitle title="Subscription" />
       <SettingsCard>
         <SettingsRow
@@ -850,7 +850,7 @@ function AdminMembersSection({ team, members, invites }: {
   const activeMembers = members.filter(m => m.status === 'active')
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <PageTitle title="Members" />
         {isAdmin && <Button text="Invite" variant="secondary" size="small" iconStart={PlusIcon} />}
@@ -1132,7 +1132,7 @@ function ComponentsPage() {
     <div className="standalone-page">
       <div className="standalone-page-inner" style={{ maxWidth: 520, gap: 'var(--space-12)' }}>
         {/* ── Page header ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
           <Text as="p" variant="text-xsmall" color="base-subdued" weight="medium">Page header</Text>
           <PageTitle title="Title" />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1142,14 +1142,14 @@ function ComponentsPage() {
         </div>
 
         {/* ── Group header ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
           <Text as="p" variant="text-xsmall" color="base-subdued" weight="medium">Group header</Text>
           <ContentSection label="Header" />
           <ContentSection label="Header" description="Description" />
         </div>
 
         {/* ── Setting ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
           <Text as="p" variant="text-xsmall" color="base-subdued" weight="medium">Setting</Text>
           <SettingsCard>
             <SettingsRow variant="clickable" label="Label" description="Description" value="Value" icon={CaretLargeRightIcon} />
@@ -1189,7 +1189,7 @@ function ComponentsPage() {
         </div>
 
         {/* ── Settings group ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
           <Text as="p" variant="text-xsmall" color="base-subdued" weight="medium">Settings group</Text>
           <ContentSection label="Header">
             <SettingsCard>
@@ -1201,7 +1201,7 @@ function ComponentsPage() {
         </div>
 
         {/* ── Settings page ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
           <Text as="p" variant="text-xsmall" color="base-subdued" weight="medium">Settings page</Text>
           <PageTitle title="Title" />
           <SettingsCard>
