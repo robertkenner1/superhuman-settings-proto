@@ -750,9 +750,9 @@ function SettingsContent({ teams }: {
             <Menu.Section label={orgName}>{makeNavItems(orgItems)}</Menu.Section>
           )}
           <Menu.Section label="Apps">
-            <Menu.Item key="coda" onClick={() => {}}>Coda <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
-            <Menu.Item key="grammarly" onClick={() => {}}>Grammarly <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
-            <Menu.Item key="mail" onClick={() => {}}>Mail <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
+            <Menu.Item key="coda" href="https://coda.io" target="_blank">Coda <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
+            <Menu.Item key="grammarly" href="https://grammarly.com" target="_blank">Grammarly <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
+            <Menu.Item key="mail" href="https://mail.superhuman.com" target="_blank">Mail <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
           </Menu.Section>
         </ul>
       </nav>
