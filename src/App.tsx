@@ -756,6 +756,9 @@ function SettingsContent({ teams }: {
             <Menu.Item key="mail" href="https://mail.superhuman.com" target="_blank">Mail <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
           </Menu.Section>
         </ul>
+        <div style={{ marginTop: 'auto', padding: 'var(--space-3) var(--space-2)' }}>
+          <Text as="p" variant="text-xsmall" color="base-subdued">Go v1.0</Text>
+        </div>
       </nav>
 
       <div ref={contentRef} className={`settings-content${fading ? ' settings-content-fading' : ''}`} style={{ flex: 1, minWidth: 0 }}>

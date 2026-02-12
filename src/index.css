@@ -32,7 +32,7 @@ body {
 }
 
 .gds-modal-content {
-  height: min(70vh, 660px);
+  height: 660px;
   max-height: min(70vh, 660px) !important;
 }
 
@@ -483,7 +483,7 @@ body {
 
 .settings-iframe {
   width: 960px;
-  height: min(70vh, 660px);
+  height: 660px;
   border: none;
   border-radius: var(--radius-medium);
   background-color: var(--color-background-base-default);
