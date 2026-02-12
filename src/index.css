@@ -231,7 +231,7 @@ body {
   transition: opacity 0.15s ease;
   opacity: 1;
   overflow-y: auto;
-  padding: var(--space-8) var(--space-10);
+  padding: 52px var(--space-10) 0;
 }
 
 .settings-content-fading {
@@ -656,7 +656,7 @@ button[aria-expanded="true"],
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-small);
+  border-radius: 50%;
   background-color: #616161;
   flex-shrink: 0;
 }
@@ -664,7 +664,7 @@ button[aria-expanded="true"],
 .member-avatar-img {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-small);
+  border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
 }
