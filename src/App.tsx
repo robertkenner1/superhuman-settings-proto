@@ -619,7 +619,7 @@ function EndOfContent() {
 function SettingsContent({ teams }: {
   teams: Team[]
 }) {
-  const [activeTab, setActiveTab] = useState<SettingsTab>('profile')
+  const [activeTab, setActiveTab] = useState<SettingsTab>('preferences')
   const [activeTeamId, setActiveTeamId] = useState<string | null>(teams[0]?.id ?? null)
   const [view, setView] = useState<OverlayView>('tabs')
   const [showToast, setShowToast] = useState(false)
@@ -666,12 +666,14 @@ function SettingsContent({ teams }: {
     }
   }, [teams])
 
+  const settingsItems: { id: SettingsTab; label: string; icon: typeof UserIcon }[] = [
+    { id: 'preferences', label: 'Preferences', icon: SlidersIcon },
+  ]
+
   const accountItems: { id: SettingsTab; label: string; icon: typeof UserIcon }[] = [
     { id: 'profile', label: 'Profile', icon: UserIcon },
-    { id: 'preferences', label: 'Preferences', icon: SlidersIcon },
     { id: 'security', label: 'Security', icon: LockIcon },
     { id: 'connected', label: 'Connected accounts', icon: LinkIcon },
-    { id: 'signout', label: 'Sign out', icon: ArrowRightRectangleIcon },
   ]
 
   const orgItems: { id: SettingsTab; label: string; icon: typeof UserIcon }[] = [
@@ -701,6 +703,7 @@ function SettingsContent({ teams }: {
     <div style={{ display: 'flex', flex: 1, minHeight: 0, height: '100%', position: 'relative' }}>
       <nav className="settings-sidebar">
         <ul className="gds-menu-list settings-nav-list">
+          <Menu.Section label="Settings">{makeNavItems(settingsItems)}</Menu.Section>
           <Menu.Section label="Account">{makeNavItems(accountItems)}</Menu.Section>
           {isOrgAdmin && org && (
             <Menu.Section label={orgName}>{makeNavItems(orgItems)}</Menu.Section>
@@ -721,7 +724,6 @@ function SettingsContent({ teams }: {
         {renderedView === 'tabs' && renderedTab === 'general' && org && <GeneralTab orgName={orgName} onOrgNameChange={setOrgName} />}
         {renderedView === 'tabs' && renderedTab === 'members' && org && <OrgMembersTab org={org} />}
         {renderedView === 'tabs' && renderedTab === 'subscription' && org && <SubscriptionTab org={org} />}
-        {renderedView === 'tabs' && renderedTab === 'signout' && <SignOutTab />}
         {renderedView === 'tabs' && isScrollable && <EndOfContent />}
 
         {renderedView === 'close-account' && (
@@ -1011,21 +1013,26 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
           <div className="profile-menu-button-wrapper">
             <Menu
               activator={
-                <button className="profile-menu-button" aria-label="Profile menu">
+                <button className="profile-menu-avatar-btn" aria-label="Profile menu">
                   <span className="profile-menu-avatar">
-                    <Text as="span" variant="text-small" weight="semibold" style={{ color: 'var(--color-background-base-default)' }}>BO</Text>
-                    {plan !== 'free' && (
-                      <span className={`avatar-badge avatar-badge-${plan}`}>
-                        <Icon icon={plan === 'pro' ? StarFillIcon : LightningFillIcon} size="small" accessibilityLabel={plan} />
-                      </span>
-                    )}
+                    <Text as="span" variant="text-small" weight="semibold" style={{ color: '#fff' }}>BO</Text>
                   </span>
-                  <Text as="span" variant="text-small">Bobby Kenner</Text>
-                  <Icon icon={CaretSmallDownIcon} size="small" accessibilityLabel="" style={{ color: 'var(--color-text-base-subdued)' }} />
                 </button>
               }
               accessibilityLabel="Profile menu"
             >
+              <div className="profile-menu-user-card">
+                <span className="profile-menu-avatar" style={{ width: 36, height: 36 }}>
+                  <Text as="span" variant="text-small" weight="semibold" style={{ color: '#fff' }}>BO</Text>
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <Text as="p" variant="text-small" weight="medium">Bobby Kenner</Text>
+                  <Text as="p" variant="text-xsmall" color="base-subdued">bobby@kenner.com</Text>
+                </div>
+                <span className={`plan-tag plan-tag-${plan}`}>
+                  <Text as="span" variant="text-xsmall" weight="medium">{plan === 'free' ? 'Free' : plan === 'pro' ? 'Pro' : 'Enterprise'}</Text>
+                </span>
+              </div>
               <Menu.Item key="settings" onClick={() => setSettingsOpen(true)}>Settings</Menu.Item>
               <Menu.Item key="signout" onClick={handleSignOut}>Sign out</Menu.Item>
             </Menu>

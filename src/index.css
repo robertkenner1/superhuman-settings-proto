@@ -27,13 +27,13 @@ body {
 }
 
 .gds-modal-overlay {
-  width: 860px !important;
-  background-color: var(--neutral-gray-0) !important;
+  width: 960px !important;
+  background-color: var(--color-background-base-default) !important;
 }
 
 .gds-modal-content {
-  height: min(75vh, 680px);
-  max-height: min(75vh, 680px) !important;
+  height: min(70vh, 660px);
+  max-height: min(70vh, 660px) !important;
 }
 
 .gds-modal-body {
@@ -100,6 +100,47 @@ body {
   background-color: var(--color-background-base-subdued);
 }
 
+.profile-menu-avatar-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: var(--radius-small);
+}
+
+.profile-menu-avatar-btn:hover .profile-menu-avatar {
+  opacity: 0.85;
+}
+
+.profile-menu-user-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border-base-subdued);
+  margin-bottom: var(--space-1);
+}
+
+.plan-tag {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-small);
+  white-space: nowrap;
+}
+
+.plan-tag-free {
+  background-color: var(--neutral-gray-10);
+}
+
+.plan-tag-pro {
+  background-color: #F5C542;
+  color: #1a1a1a;
+}
+
+.plan-tag-enterprise {
+  background-color: #1F1B4D;
+  color: #fff;
+}
+
 .profile-menu-avatar {
   position: relative;
   display: flex;
@@ -152,10 +193,11 @@ body {
   flex-direction: column;
   gap: var(--space-1);
   min-width: 160px;
-  padding: var(--space-8) 0 var(--space-8) var(--space-8);
-  margin-right: var(--space-8);
+  padding: var(--space-4);
   overflow-y: auto;
   flex-shrink: 0;
+  background-color: var(--color-background-base-subdued);
+  border-right: 0.5px solid var(--color-border-base-subdued);
 }
 
 .settings-sidebar-hidden {
@@ -166,11 +208,7 @@ body {
   transition: opacity 0.15s ease;
   opacity: 1;
   overflow-y: auto;
-  padding: var(--space-8) 0 var(--space-8) var(--space-4);
-}
-
-.settings-content > * {
-  margin-right: var(--space-10);
+  padding: var(--space-8) var(--space-10);
 }
 
 .settings-content-fading {
@@ -195,22 +233,22 @@ body {
 }
 
 .settings-nav-list .settings-nav-active {
-  background-color: var(--neutral-gray-5);
+  background-color: rgba(0, 0, 0, 0.04);
   border-radius: var(--radius-small);
 }
 
 .settings-nav-list .gds-menu-item:hover:not(.gds-menu-item-disabled) {
-  background: var(--neutral-gray-10);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .settings-nav-list .gds-menu-item:active:not(.gds-menu-item-disabled) {
-  background-color: var(--neutral-gray-5);
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .settings-nav-list .settings-nav-active.gds-menu-item,
 .settings-nav-list .settings-nav-active.gds-menu-item:hover:not(.gds-menu-item-disabled),
 .settings-nav-list .settings-nav-active.gds-menu-item:active:not(.gds-menu-item-disabled) {
-  background-color: var(--neutral-gray-5);
+  background-color: rgba(0, 0, 0, 0.04);
   cursor: default;
 }
 
@@ -224,16 +262,15 @@ body {
 
 /* Card container for settings groups */
 .settings-card {
-  border: 1px solid var(--color-border-base-subdued);
+  border: none;
   border-radius: var(--radius-medium);
   overflow: visible;
-  background-color: var(--color-background-base-default);
-  box-shadow: 0 1px 0 0 var(--color-border-base-subdued);
+  background-color: var(--color-background-base-subdued);
 }
 
 .settings-card > .settings-row,
 .settings-card > .settings-row-clickable {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4);
   position: relative;
 }
 
@@ -242,7 +279,7 @@ body {
   content: '';
   position: absolute;
   bottom: 0;
-  height: 1px;
+  height: 0.5px;
   background-color: var(--color-border-base-subdued);
 }
 
@@ -398,11 +435,11 @@ body {
 }
 
 .settings-iframe {
-  width: 860px;
-  height: min(75vh, 680px);
+  width: 960px;
+  height: min(70vh, 660px);
   border: none;
   border-radius: var(--radius-medium);
-  background-color: var(--neutral-gray-0);
+  background-color: var(--color-background-base-default);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
 }
 
@@ -413,7 +450,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: var(--neutral-gray-0);
+  background-color: var(--color-background-base-default);
   overflow: hidden;
 }
 

@@ -71,19 +71,30 @@ Two variants based on interaction model:
 - Label: required, `text-small`
 - Description: optional, `text-small`, `base-subdued`
 - Gap between label and description: `space-half` (2px)
-- Row padding: `space-3` top/bottom, `space-4` left/right
+- Row padding: `space-4` all sides (16px)
+
+## Surfaces
+
+The modal uses a two-column layout with distinct surface treatments:
+
+| Surface | Background | Border |
+|---------|-----------|--------|
+| Modal / content column | `color-background-base-default` (white) | — |
+| Nav sidebar | `color-background-base-subdued` | `0.5px` right border |
+| Settings card | `color-background-base-subdued` | None |
+
+Nav selected state uses `rgba(0, 0, 0, 0.04)` — a subtle opacity overlay that bleeds through the subdued background.
 
 ## Card (SettingsCard)
 
-- Border: `1px solid color-border-base-subdued`
+- Border: none
 - Border radius: `radius-medium`
-- Background: `color-background-base-default`
-- Box shadow: `0 1px 0 0 color-border-base-subdued` — adds visual weight to the bottom edge
+- Background: `color-background-base-subdued`
 - Overflow: `visible` (so menus can escape the card)
 
 ## Row borders
 
-The border treatment differs by variant to create an affordance signal:
+Row dividers are `0.5px` for subtlety. The inset treatment differs by variant to create an affordance signal:
 
 | Variant | Left edge | Right edge | Why |
 |---------|-----------|------------|-----|
@@ -99,13 +110,16 @@ The border treatment differs by variant to create an affordance signal:
 | Menu selector | `Button` secondary small + `CaretSmallDownIcon` | Choosing from a list of values |
 | Toggle | `Switch` | Binary on/off settings |
 | Static | No action | Display-only information |
+| External link | `Button` secondary small + `external` prop | Action that navigates to an external product (appends ↗) |
+| Inline edit | `TextField` wrapped in `.settings-field-compact` | Non-consequential changes that save on blur |
 
 **Rule:** Only one action is exposed inline per row. If a setting has multiple actions, expose the primary one and put the rest in overflow.
 
 ## Interaction states
 
 - **Hover:** `color-background-base-subdued` — used for clickable rows, buttons, menu items
-- **Active/pressed:** `neutral-gray-5`
+- **Active/pressed:** `rgba(0, 0, 0, 0.04)`
+- **Nav selected/hover:** `rgba(0, 0, 0, 0.04)` — subtle opacity overlay on subdued bg
 - **Menu trigger while open:** `color-background-base-subdued` (via `aria-expanded="true"`)
 - **No custom overrides** on Origin component internals — trust the design system defaults
 
