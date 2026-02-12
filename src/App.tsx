@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef, useCallback, isValidElement, cloneElement } from 'react'
 import {
+  ArrowRightRectangleIcon,
   CaretLargeLeftIcon,
   Button,
   CaretSmallDownIcon,
   CaretLargeRightIcon,
   Checkbox,
+  BellIcon,
   BuildingIcon,
   DotsThreeHorizontalIcon,
+  EyeIcon,
   Form,
   FormFooter,
   FormRow,
@@ -22,6 +25,7 @@ import {
   PencilIcon,
   PlusIcon,
 
+  GearIcon,
   SlidersIcon,
 
   StarIcon,
@@ -62,34 +66,34 @@ interface Invite {
 }
 
 type SettingsTab =
-  | 'profile' | 'preferences' | 'security' | 'connected'
+  | 'profile' | 'preferences' | 'security' | 'connected' | 'data-privacy'
   | 'general' | 'members' | 'subscription'
   | 'signout'
 
 type OverlayView = 'tabs' | 'close-account'
 
 const DEMO_TEAMS: Record<Plan, Team[]> = {
-  free: [{ id: 't1', name: "Bobby's Organization", planLabel: 'Free', role: 'admin' }],
-  pro: [{ id: 't1', name: "Bobby's Workspace", planLabel: 'Pro — $10/month per seat', role: 'admin' }],
+  free: [{ id: 't1', name: "Morgan's Organization", planLabel: 'Free', role: 'admin' }],
+  pro: [{ id: 't1', name: "Morgan's Workspace", planLabel: 'Pro — $10/month per seat', role: 'admin' }],
   enterprise: [{ id: 't2', name: 'Acme Corp', planLabel: 'Enterprise', role: 'admin' }],
 }
 
-const CURRENT_USER_EMAIL = 'bobby@kenner.com'
+const CURRENT_USER_EMAIL = 'morgan@taylor.com'
 
 const DEMO_MEMBERS: Record<string, Member[]> = {
   t1: [
-    { id: 'm1', name: 'Bobby Kenner', email: 'bobby@kenner.com', role: 'admin', status: 'active', avatarInitials: 'BO' },
+    { id: 'm1', name: 'Morgan Taylor', email: 'morgan@taylor.com', role: 'admin', status: 'active', avatarInitials: 'MT' },
   ],
   t2: [
     { id: 'm2', name: 'Alice Chen', email: 'alice@acme.com', role: 'admin', status: 'active', avatarInitials: 'AC' },
-    { id: 'm1', name: 'Bobby Kenner', email: 'bobby@kenner.com', role: 'member', status: 'active', avatarInitials: 'BO' },
+    { id: 'm1', name: 'Morgan Taylor', email: 'morgan@taylor.com', role: 'member', status: 'active', avatarInitials: 'MT' },
     { id: 'm3', name: 'Dan Park', email: 'dan@acme.com', role: 'admin', status: 'active', avatarInitials: 'DP' },
   ],
 }
 
 const DEMO_INVITES: Record<string, Invite[]> = {
   t1: [
-    { id: 'i1', email: 'sarah@example.com', role: 'member', sentAt: '2 days ago', sentBy: 'Bobby Kenner' },
+    { id: 'i1', email: 'sarah@example.com', role: 'member', sentAt: '2 days ago', sentBy: 'Morgan Taylor' },
   ],
   t2: [
     { id: 'i2', email: 'mike@acme.com', role: 'member', sentAt: '1 day ago', sentBy: 'Alice Chen' },
@@ -214,12 +218,10 @@ function ProfileSettings({ onCloseAccount, teams }: { onCloseAccount: () => void
       <PageTitle title="Profile" />
       <SettingsCard>
         <SettingsRow variant="clickable" label="Avatar" icon={PencilIcon} value={
-          <span className="profile-menu-avatar">
-            <Text as="span" variant="text-small" weight="semibold" style={{ color: 'var(--color-background-base-default)' }}>BO</Text>
-          </span>
+          <img src="/img/avatar.png" alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
         } />
-        <SettingsRow variant="clickable" label="Full name" value="Bobby Kenner" icon={PencilIcon} />
-        <SettingsRow variant="clickable" label="Email" value="bobby@kenner.com" icon={PencilIcon} />
+        <SettingsRow variant="clickable" label="Full name" value="Morgan Taylor" icon={PencilIcon} />
+        <SettingsRow variant="clickable" label="Email" value="morgan@taylor.com" icon={PencilIcon} />
         <SettingsRow variant="clickable" label="Password" value="Last changed 3 months ago" icon={PencilIcon} />
       </SettingsCard>
       <ContentSection label={teams.length > 0 ? 'Workspace access' : 'Account access'}>
@@ -242,7 +244,7 @@ function CloseAccount({ onBack, teams }: { onBack: () => void; teams: Team[] }) 
   const [acknowledged, setAcknowledged] = useState(false)
   const [codeError, setCodeError] = useState('')
   const [checkboxError, setCheckboxError] = useState('')
-  const email = 'bobby@kenner.com'
+  const email = 'morgan@taylor.com'
 
   const handleDelete = () => {
     let hasError = false
@@ -386,7 +388,7 @@ function SecurityTab() {
 
 function ConnectedAccountsTab() {
   const accounts = [
-    { provider: 'Google', email: 'bobby@gmail.com', connected: true },
+    { provider: 'Google', email: 'morgan@gmail.com', connected: true },
     { provider: 'Apple', email: null, connected: false },
     { provider: 'Microsoft', email: null, connected: false },
   ]
@@ -409,6 +411,42 @@ function ConnectedAccountsTab() {
           />
         ))}
       </SettingsCard>
+    </div>
+  )
+}
+
+function DataPrivacyTab() {
+  const [aiTraining, setAiTraining] = useState(false)
+  const [analyticsSharing, setAnalyticsSharing] = useState(true)
+  const [exportRequested, setExportRequested] = useState(false)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <PageTitle title="Data & privacy" />
+      <SettingsCard>
+        <SettingsRow
+          variant="action"
+          label="Use my data to improve AI models"
+          description="When enabled, your content may be used to train and improve AI features across Superhuman products"
+          actions={<Switch label="AI training" labelDisplay="hidden" isSelected={aiTraining} onChange={() => setAiTraining(v => !v)} />}
+        />
+      </SettingsCard>
+      <ContentSection label="Your data">
+        <SettingsCard>
+          <SettingsRow
+            variant="action"
+            label="Export your data"
+            description={exportRequested ? 'Export in progress — we\'ll email you when it\'s ready' : 'Download a copy of all your data across Superhuman products'}
+            actions={<Button text={exportRequested ? 'Requested' : 'Request'} variant="secondary" size="small" onClick={() => setExportRequested(true)} />}
+          />
+          <SettingsRow
+            variant="action"
+            label="Share usage data with analytics providers"
+            description="Helps us understand how products are used to improve the experience"
+            actions={<Switch label="Analytics sharing" labelDisplay="hidden" isSelected={analyticsSharing} onChange={() => setAnalyticsSharing(v => !v)} />}
+          />
+        </SettingsCard>
+      </ContentSection>
     </div>
   )
 }
@@ -484,7 +522,7 @@ function InviteList({ invites }: { invites: Invite[] }) {
   return (
     <SettingsCard>
       {invites.map(invite => {
-        const byYou = invite.sentBy === 'Bobby Kenner'
+        const byYou = invite.sentBy === 'Morgan Taylor'
         return (
           <div className="member-row" key={invite.id}>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -506,9 +544,9 @@ function InviteList({ invites }: { invites: Invite[] }) {
 
 function SignOutTab() {
   const products = [
-    { name: 'Superhuman', email: 'bobby@kenner.com' },
-    { name: 'Coda', email: 'bobby@kenner.com' },
-    { name: 'Grammarly', email: 'bobby@kenner.com' },
+    { name: 'Superhuman', email: 'morgan@taylor.com' },
+    { name: 'Coda', email: 'morgan@taylor.com' },
+    { name: 'Grammarly', email: 'morgan@taylor.com' },
   ]
 
   return (
@@ -671,6 +709,7 @@ function SettingsContent({ teams }: {
     { id: 'profile', label: 'Profile', icon: UserIcon },
     { id: 'security', label: 'Security', icon: LockIcon },
     { id: 'connected', label: 'Connected accounts', icon: LinkIcon },
+    { id: 'data-privacy', label: 'Data & privacy', icon: EyeIcon },
   ]
 
   const orgItems: { id: SettingsTab; label: string; icon: typeof UserIcon }[] = [
@@ -718,6 +757,7 @@ function SettingsContent({ teams }: {
         {renderedView === 'tabs' && renderedTab === 'preferences' && <PreferencesTab />}
         {renderedView === 'tabs' && renderedTab === 'security' && <SecurityTab />}
         {renderedView === 'tabs' && renderedTab === 'connected' && <ConnectedAccountsTab />}
+        {renderedView === 'tabs' && renderedTab === 'data-privacy' && <DataPrivacyTab />}
         {renderedView === 'tabs' && renderedTab === 'general' && org && <GeneralTab orgName={orgName} onOrgNameChange={setOrgName} />}
         {renderedView === 'tabs' && renderedTab === 'members' && org && <OrgMembersTab org={org} />}
         {renderedView === 'tabs' && renderedTab === 'subscription' && org && <SubscriptionTab org={org} />}
@@ -731,7 +771,7 @@ function SettingsContent({ teams }: {
       {showToast && (
         <div style={{ position: 'absolute', bottom: 'var(--space-6)', left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
           <Toast
-            text="Deletion verification code sent to bobby@kenner.com"
+            text="Deletion verification code sent to morgan@taylor.com"
             variant="success"
             onClose={() => setShowToast(false)}
           />
@@ -902,9 +942,9 @@ function SettingsPage({ plan }: { plan: Plan }) {
 // ── Demo accounts ──
 
 const DEMO_ACCOUNTS: { email: string; plan: Plan; planLabel: string }[] = [
-  { email: 'bobby@gmail.com', plan: 'free', planLabel: 'Free' },
-  { email: 'bobby@kenner.com', plan: 'pro', planLabel: 'Pro' },
-  { email: 'bobby@acme.com', plan: 'enterprise', planLabel: 'Enterprise' },
+  { email: 'morgan@gmail.com', plan: 'free', planLabel: 'Free' },
+  { email: 'morgan@taylor.com', plan: 'pro', planLabel: 'Pro' },
+  { email: 'morgan@acme.com', plan: 'enterprise', planLabel: 'Enterprise' },
 ]
 
 // ── SignInPage ──
@@ -932,9 +972,7 @@ function SignInPage({ onSignIn }: { onSignIn: (plan: Plan) => void }) {
               className="signin-account-button"
               onClick={() => handleSignIn(account.plan)}
             >
-              <span className="profile-menu-avatar" style={{ width: 32, height: 32 }}>
-                <Text as="span" variant="text-small" weight="semibold" style={{ color: 'var(--color-background-base-default)' }}>BO</Text>
-              </span>
+              <img src="/img/avatar.png" alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
               <div style={{ flex: 1, textAlign: 'left' }}>
                 <Text as="p" variant="text-small">{account.email}</Text>
               </div>
@@ -1003,36 +1041,31 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
   }, [isSignedIn])
 
   return (
-    <>
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3) var(--space-6)', backgroundColor: 'var(--color-background-base-default)', borderBottom: '1px solid var(--color-border-base-subdued)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)', backgroundColor: 'transparent', borderBottom: 'none', flexShrink: 0 }}>
         <Logo brand="superhuman" composition="lockup" variant="color-secondary" accessibilityLabel="Superhuman" style={{ transform: 'scale(0.8)', transformOrigin: 'left center' }} />
         {isSignedIn ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+          <IconButton icon={BellIcon} variant="tertiary" size="medium" accessibilityLabel="Notifications" />
           <div className="profile-menu-button-wrapper">
             <Menu
               activator={
-                <button className="profile-menu-avatar-btn" aria-label="Profile menu">
-                  <span className="profile-menu-avatar">
-                    <Text as="span" variant="text-small" weight="semibold" style={{ color: '#fff' }}>BO</Text>
-                  </span>
-                </button>
+                <IconButton icon={UserIcon} variant="tertiary" size="medium" accessibilityLabel="Profile menu" />
               }
               accessibilityLabel="Profile menu"
             >
               <div className="profile-menu-user-card">
-                <span className="profile-menu-avatar" style={{ width: 36, height: 36 }}>
-                  <Text as="span" variant="text-small" weight="semibold" style={{ color: '#fff' }}>BO</Text>
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <Text as="p" variant="text-small" weight="medium">Bobby Kenner</Text>
-                  <Text as="p" variant="text-xsmall" color="base-subdued">bobby@kenner.com</Text>
+                <img src="/img/avatar.png" alt="" className="profile-menu-card-avatar" />
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Text as="p" variant="text-small" weight="medium">Morgan Taylor</Text>
+                  <Text as="p" variant="text-small" color="base-subdued">morgan@taylor.com</Text>
                 </div>
-                <span className={`plan-tag plan-tag-${plan}`}>
-                  <Text as="span" variant="text-xsmall" weight="medium">{plan === 'free' ? 'Free' : plan === 'pro' ? 'Pro' : 'Enterprise'}</Text>
-                </span>
               </div>
-              <Menu.Item key="settings" onClick={() => setSettingsOpen(true)}>Settings</Menu.Item>
-              <Menu.Item key="signout" onClick={handleSignOut}>Sign out</Menu.Item>
+              <Menu.Item key="settings" icon={GearIcon} onClick={() => setSettingsOpen(true)}>Settings</Menu.Item>
+              <div className="profile-menu-divider" />
+              <Menu.Item key="signout" icon={ArrowRightRectangleIcon} onClick={handleSignOut}>Sign out</Menu.Item>
             </Menu>
+          </div>
           </div>
         ) : (
           <button className="profile-menu-button" aria-label="Sign in" onClick={() => setSignInOpen(true)}>
@@ -1044,7 +1077,14 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
         )}
       </nav>
 
-      <div style={{ padding: 'var(--space-10)' }} />
+      <div style={{ flex: 1, padding: '0 var(--space-3) var(--space-3)' }}>
+        <div style={{
+          backgroundColor: 'var(--color-background-base-default)',
+          border: '1px solid var(--color-border-base-subdued)',
+          borderRadius: 'var(--radius-medium)',
+          height: '100%',
+        }} />
+      </div>
 
       {/* Iframe overlay for settings */}
       {settingsOpen && (
@@ -1073,7 +1113,7 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
         </div>
       )}
 
-    </>
+    </div>
   )
 }
 
