@@ -52,7 +52,7 @@ body {
 }
 
 .profile-menu-button-wrapper button[aria-expanded="true"] {
-  background-color: rgba(0, 0, 0, 0.04) !important;
+  background-color: var(--color-button-secondary-fill-hover) !important;
 }
 
 .profile-menu-button-wrapper .gds-menu-dropdown {
@@ -256,22 +256,22 @@ body {
 }
 
 .settings-nav-list .settings-nav-active {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: var(--color-button-secondary-fill-hover);
   border-radius: var(--radius-small);
 }
 
 .settings-nav-list .gds-menu-item:hover:not(.gds-menu-item-disabled) {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--color-button-secondary-fill-hover);
 }
 
 .settings-nav-list .gds-menu-item:active:not(.gds-menu-item-disabled) {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: var(--color-button-secondary-fill-hover);
 }
 
 .settings-nav-list .settings-nav-active.gds-menu-item,
 .settings-nav-list .settings-nav-active.gds-menu-item:hover:not(.gds-menu-item-disabled),
 .settings-nav-list .settings-nav-active.gds-menu-item:active:not(.gds-menu-item-disabled) {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: var(--color-button-secondary-fill-hover);
   cursor: default;
 }
 
@@ -330,7 +330,7 @@ body {
 }
 
 .settings-row-clickable:hover {
-  background-color: var(--color-background-base-subdued);
+  background-color: var(--color-button-secondary-fill-hover);
 }
 
 .settings-card > .settings-row-clickable:first-child {
