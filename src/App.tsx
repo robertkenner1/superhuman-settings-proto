@@ -55,6 +55,7 @@ interface Member {
   role: 'admin' | 'member'
   status: 'active' | 'pending'
   avatarInitials: string
+  avatarUrl?: string
 }
 
 interface Invite {
@@ -82,7 +83,7 @@ const CURRENT_USER_EMAIL = 'morgan@taylor.com'
 
 const DEMO_MEMBERS: Record<string, Member[]> = {
   t1: [
-    { id: 'm1', name: 'Morgan Taylor', email: 'morgan@taylor.com', role: 'admin', status: 'active', avatarInitials: 'MT' },
+    { id: 'm1', name: 'Morgan Taylor', email: 'morgan@taylor.com', role: 'admin', status: 'active', avatarInitials: 'MT', avatarUrl: '/img/avatar.png' },
   ],
   t2: [
     { id: 'm2', name: 'Alice Chen', email: 'alice@acme.com', role: 'admin', status: 'active', avatarInitials: 'AC' },
@@ -489,9 +490,13 @@ function MemberList({ members, isAdmin }: { members: Member[]; isAdmin: boolean 
     <SettingsCard>
       {members.map(member => (
         <div className="member-row" key={member.id}>
-          <span className="member-avatar">
-            <Text as="span" variant="text-xsmall" weight="semibold" style={{ color: '#fff' }}>{member.avatarInitials}</Text>
-          </span>
+          {member.avatarUrl ? (
+            <img src={member.avatarUrl} alt="" className="member-avatar-img" />
+          ) : (
+            <span className="member-avatar">
+              <Text as="span" variant="text-xsmall" weight="semibold" style={{ color: '#fff' }}>{member.avatarInitials}</Text>
+            </span>
+          )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <Text as="p" variant="text-small">{member.name}</Text>
             <Text as="p" variant="text-small" color="base-subdued">{member.email}</Text>
