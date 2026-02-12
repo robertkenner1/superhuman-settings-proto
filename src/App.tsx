@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback, isValidElement, cloneElement } from 'react'
 import {
   CaretLargeLeftIcon,
-  ArrowRightRectangleIcon,
   Button,
   CaretSmallDownIcon,
   CaretLargeRightIcon,
@@ -12,7 +11,6 @@ import {
   FormFooter,
   FormRow,
 
-  LightningFillIcon,
   Heading,
   Icon,
   IconButton,
@@ -26,7 +24,6 @@ import {
 
   SlidersIcon,
 
-  StarFillIcon,
   StarIcon,
   Switch,
   Text,
