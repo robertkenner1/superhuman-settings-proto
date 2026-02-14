@@ -1,46 +1,51 @@
 import { useState, useEffect, useRef, useCallback, isValidElement, cloneElement } from 'react'
 import {
   ArrowRightRectangleIcon,
-  CaretLargeLeftIcon,
-  Button,
-  CaretSmallDownIcon,
-  CaretLargeRightIcon,
-  Checkbox,
   BellIcon,
+  BookIcon,
   BuildingIcon,
+  CalendarIcon,
+  CaretLargeLeftIcon,
+  CaretLargeRightIcon,
+  CaretSmallDownIcon,
+  ChartBarIcon,
+  CodeIcon,
   DotsThreeHorizontalIcon,
+  EnvelopeIcon,
   EyeIcon,
+  FileIcon,
+  GearIcon,
+  LinkIcon,
+  LockIcon,
+  PencilIcon,
+  PlusIcon,
+  SlidersIcon,
+  SparklesIcon,
+  StarIcon,
+  UserIcon,
+  UsersIcon,
+  XIcon,
+  Button,
+  Checkbox,
   Form,
   FormFooter,
   FormRow,
-
   Heading,
   Icon,
   IconButton,
   Link,
-  LinkIcon,
-  LockIcon,
   Logo,
   Menu,
-  PencilIcon,
   PlanTag,
-  PlusIcon,
-
-  GearIcon,
-  SlidersIcon,
-
-  StarIcon,
   Switch,
   Text,
-  ThemeProvider,
   TextField,
+  ThemeProvider,
   Toast,
-  UserIcon,
-  UsersIcon,
-  XIcon,
 } from '@grammarly/origin'
 
 type Plan = 'free' | 'pro' | 'enterprise'
+type Product = 'mail' | 'calendar' | 'docs' | 'grammarly'
 
 interface Team {
   id: string
@@ -71,6 +76,11 @@ type SettingsTab =
   | 'profile' | 'preferences' | 'security' | 'connected' | 'data-privacy'
   | 'general' | 'members' | 'subscription'
   | 'signout'
+  | 'mail-ai' | 'mail-sales' | 'mail-workflow' | 'mail-triage' | 'mail-writing'
+  | 'mail-team' | 'mail-learning' | 'mail-advanced' | 'mail-achievements'
+  | 'cal-settings'
+  | 'docs-api'
+  | 'gram-writing' | 'gram-tools' | 'gram-analytics'
 
 type OverlayView = 'tabs' | 'close-account'
 
@@ -129,6 +139,77 @@ function getPlanFromUrl(): Plan {
   if (p === 'free' || p === 'pro' || p === 'enterprise') return p
   return 'pro'
 }
+
+function getProductFromUrl(): Product {
+  const params = new URLSearchParams(window.location.search)
+  const p = params.get('product')
+  if (p === 'mail' || p === 'calendar' || p === 'docs' || p === 'grammarly') return p
+  return 'mail'
+}
+
+const PRODUCT_NAV_CONFIG: Record<Product, {
+  label: string
+  sectionLabel: string
+  items: { id: SettingsTab; label: string; icon?: typeof UserIcon }[]
+}> = {
+  mail: {
+    label: 'Mail',
+    sectionLabel: 'Mail settings',
+    items: [
+      { id: 'mail-ai', label: 'Superhuman AI', icon: SparklesIcon },
+      { id: 'mail-sales', label: 'Sales', icon: ChartBarIcon },
+      { id: 'mail-workflow', label: 'Workflow', icon: SlidersIcon },
+      { id: 'mail-triage', label: 'Triage', icon: EnvelopeIcon },
+      { id: 'mail-writing', label: 'Writing', icon: PencilIcon },
+      { id: 'mail-team', label: 'Team Features', icon: UsersIcon },
+      { id: 'mail-learning', label: 'Learning', icon: BookIcon },
+      { id: 'mail-advanced', label: 'Advanced', icon: GearIcon },
+    ],
+  },
+  calendar: {
+    label: 'Calendar',
+    sectionLabel: 'Calendar settings',
+    items: [
+      { id: 'cal-settings', label: 'Calendar', icon: CalendarIcon },
+    ],
+  },
+  docs: {
+    label: 'Docs',
+    sectionLabel: 'Docs settings',
+    items: [
+      { id: 'docs-api', label: 'API / Developer', icon: CodeIcon },
+    ],
+  },
+  grammarly: {
+    label: 'Grammarly',
+    sectionLabel: 'Grammarly settings',
+    items: [
+      { id: 'gram-writing', label: 'Writing Style', icon: PencilIcon },
+      { id: 'gram-tools', label: 'Tools', icon: GearIcon },
+      { id: 'gram-analytics', label: 'Analytics', icon: ChartBarIcon },
+    ],
+  },
+}
+
+const PRODUCT_ORDER: Product[] = ['grammarly', 'docs', 'mail', 'calendar']
+
+const STUB_TAB_TITLES: Partial<Record<SettingsTab, string>> = {
+  'mail-ai': 'Superhuman AI',
+  'mail-sales': 'Sales',
+  'mail-workflow': 'Workflow',
+  'mail-triage': 'Triage',
+  'mail-writing': 'Writing',
+  'mail-team': 'Team Features',
+  'mail-learning': 'Learning',
+  'mail-advanced': 'Advanced',
+  'mail-achievements': 'Achievements',
+  'cal-settings': 'Calendar',
+  'docs-api': 'API / Developer',
+  'gram-writing': 'Writing Style',
+  'gram-tools': 'Tools',
+  'gram-analytics': 'Analytics',
+}
+
 
 function PageTitle({ title }: { title: string }) {
   return <Heading as="h2" variant="heading-small" style={{}}>{title}</Heading>
@@ -655,12 +736,23 @@ function EndOfContent() {
   )
 }
 
+function StubSettingsPage({ tabId }: { tabId: SettingsTab }) {
+  const title = STUB_TAB_TITLES[tabId] ?? tabId
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
+      <PageTitle title={title} />
+    </div>
+  )
+}
+
 // ── Settings content (shared between settings.localhost and the old modal) ──
 
-function SettingsContent({ teams }: {
+function SettingsContent({ teams, product = 'mail' }: {
   teams: Team[]
+  product?: Product
 }) {
-  const [activeTab, setActiveTab] = useState<SettingsTab>('preferences')
+  const productConfig = PRODUCT_NAV_CONFIG[product]
+  const [activeTab, setActiveTab] = useState<SettingsTab>(productConfig.items[0].id)
   const [activeTeamId, setActiveTeamId] = useState<string | null>(teams[0]?.id ?? null)
   const [view, setView] = useState<OverlayView>('tabs')
   const [showToast, setShowToast] = useState(false)
@@ -707,12 +799,9 @@ function SettingsContent({ teams }: {
     }
   }, [teams])
 
-  const settingsItems: { id: SettingsTab; label: string; icon: typeof UserIcon }[] = [
-    { id: 'preferences', label: 'Preferences', icon: SlidersIcon },
-  ]
-
   const accountItems: { id: SettingsTab; label: string; icon: typeof UserIcon }[] = [
     { id: 'profile', label: 'Profile', icon: UserIcon },
+    { id: 'preferences', label: 'Preferences', icon: SlidersIcon },
     { id: 'security', label: 'Security', icon: LockIcon },
     { id: 'connected', label: 'Connected accounts', icon: LinkIcon },
     { id: 'data-privacy', label: 'Data & privacy', icon: EyeIcon },
@@ -729,7 +818,7 @@ function SettingsContent({ teams }: {
     setShowToast(false)
   }
 
-  const makeNavItems = (items: { id: SettingsTab; label: string; icon: typeof UserIcon }[]) =>
+  const makeNavItems = (items: { id: SettingsTab; label: string; icon?: typeof UserIcon }[]) =>
     items.map(item => (
       <Menu.Item
         key={item.id}
@@ -745,19 +834,15 @@ function SettingsContent({ teams }: {
     <div style={{ display: 'flex', flex: 1, minHeight: 0, height: '100%', position: 'relative' }}>
       <nav className="settings-sidebar">
         <ul className="gds-menu-list settings-nav-list">
-          <Menu.Section label="Settings">{makeNavItems(settingsItems)}</Menu.Section>
+          <Menu.Section label={productConfig.sectionLabel}>{makeNavItems(productConfig.items)}</Menu.Section>
           <Menu.Section label="Account">{makeNavItems(accountItems)}</Menu.Section>
           {isOrgAdmin && org && (
             <Menu.Section label={orgName}>{makeNavItems(orgItems)}</Menu.Section>
           )}
-          <Menu.Section label="Apps">
-            <Menu.Item key="coda" href="https://coda.io" target="_blank">Coda <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
-            <Menu.Item key="grammarly" href="https://grammarly.com" target="_blank">Grammarly <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
-            <Menu.Item key="mail" href="https://mail.superhuman.com" target="_blank">Mail <Text as="span" variant="text-xsmall" color="base-subdued">↗</Text></Menu.Item>
-          </Menu.Section>
+
         </ul>
         <div style={{ marginTop: 'auto', padding: 'var(--space-3) var(--space-2)' }}>
-          <Text as="p" variant="text-xsmall" color="base-subdued">Go v1.0</Text>
+          <Text as="p" variant="text-xsmall" color="base-subdued">Superhuman v1.0</Text>
         </div>
       </nav>
 
@@ -770,6 +855,7 @@ function SettingsContent({ teams }: {
         {renderedView === 'tabs' && renderedTab === 'general' && org && <GeneralTab orgName={orgName} onOrgNameChange={setOrgName} />}
         {renderedView === 'tabs' && renderedTab === 'members' && org && <OrgMembersTab org={org} />}
         {renderedView === 'tabs' && renderedTab === 'subscription' && org && <SubscriptionTab org={org} />}
+        {renderedView === 'tabs' && STUB_TAB_TITLES[renderedTab] && <StubSettingsPage tabId={renderedTab} />}
         {renderedView === 'tabs' && isScrollable && <EndOfContent />}
 
         {renderedView === 'close-account' && (
@@ -938,12 +1024,20 @@ function SettingsPage({ plan }: { plan: Plan }) {
     window.parent.postMessage({ type: 'close' }, '*')
   }, [])
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [handleClose])
+
   return (
     <div className="settings-page">
       <button className="settings-page-close" onClick={handleClose} aria-label="Close settings">
         <Icon icon={XIcon} size="small" accessibilityLabel="Close" />
       </button>
-      <SettingsContent teams={teams} />
+      <SettingsContent teams={teams} product={getProductFromUrl()} />
     </div>
   )
 }
@@ -1004,6 +1098,30 @@ function SignInPage({ onSignIn }: { onSignIn: (plan: Plan) => void }) {
   )
 }
 
+function ProductSwitcher({ active, onChange }: { active: Product; onChange: (p: Product) => void }) {
+  const activeIndex = PRODUCT_ORDER.indexOf(active)
+  return (
+    <div className="product-switcher">
+      <div className="product-switcher-indicator" style={{ transform: `translateX(${activeIndex * 34}px)` }} />
+      {PRODUCT_ORDER.map(p => {
+        const config = PRODUCT_NAV_CONFIG[p]
+        const icon = p === 'grammarly' ? PencilIcon : p === 'docs' ? FileIcon : p === 'mail' ? EnvelopeIcon : CalendarIcon
+        return (
+          <button
+            key={p}
+            className={`product-switcher-btn${active === p ? ' product-switcher-active' : ''}`}
+            onClick={() => onChange(p)}
+            aria-label={config.label}
+            title={config.label}
+          >
+            <Icon icon={icon} size="small" accessibilityLabel={config.label} />
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── home.localhost — main app shell with iframe modal ──
 
 function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Plan) => void }) {
@@ -1011,6 +1129,7 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [exportToast, setExportToast] = useState(false)
   const [signInOpen, setSignInOpen] = useState(false)
+  const [activeProduct, setActiveProduct] = useState<Product>('grammarly')
 
   useEffect(() => {
     document.title = settingsOpen ? 'Settings — Superhuman' : 'Superhuman'
@@ -1041,22 +1160,39 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
     return () => window.removeEventListener('message', handler)
   }, [])
 
-  // Cmd+, keyboard shortcut
+  // Keyboard shortcuts: Cmd+, to toggle, S to open, Escape to close
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === ',') {
+        e.preventDefault()
+        if (isSignedIn) setSettingsOpen(prev => !prev)
+        return
+      }
+      if (e.key === 'Escape' && settingsOpen) {
+        setSettingsOpen(false)
+        return
+      }
+      const tag = (e.target as HTMLElement)?.tagName
+      if (e.key === 's' && !e.metaKey && !e.ctrlKey && !e.altKey && isSignedIn && !settingsOpen && tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+        setSettingsOpen(true)
+        return
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault()
         if (isSignedIn) setSettingsOpen(prev => !prev)
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [isSignedIn])
+  }, [isSignedIn, settingsOpen])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)', backgroundColor: 'transparent', borderBottom: 'none', flexShrink: 0 }}>
-        <Logo brand="superhuman" composition="lockup" variant="color-secondary" accessibilityLabel="Superhuman" style={{ transform: 'scale(0.75)', transformOrigin: 'left center' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <Logo brand="superhuman" composition="mark" variant="color-secondary" accessibilityLabel="Superhuman" style={{ width: 32, height: 32 }} />
+          {isSignedIn && <ProductSwitcher active={activeProduct} onChange={setActiveProduct} />}
+        </div>
         {isSignedIn ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
           <IconButton icon={BellIcon} variant="tertiary" size="medium" accessibilityLabel="Notifications" />
@@ -1094,9 +1230,16 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
         <div style={{
           backgroundColor: 'var(--color-background-base-default)',
           border: '1px solid var(--color-border-base-subdued)',
-          borderRadius: 'var(--radius-medium)',
+          borderRadius: '20px',
           height: '100%',
-        }} />
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <Heading as="h2" variant="heading-small" style={{ color: 'var(--color-text-base-subdued)' }}>
+            {PRODUCT_NAV_CONFIG[activeProduct].label}
+          </Heading>
+        </div>
       </div>
 
       {/* Iframe overlay for settings */}
@@ -1104,7 +1247,7 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
         <div className="settings-iframe-overlay" onClick={() => setSettingsOpen(false)}>
           <iframe
             className="settings-iframe"
-            src={urlWithPlan('settings', plan)}
+            src={urlWithPlan('settings', plan, `&product=${activeProduct}`)}
             onClick={(e) => e.stopPropagation()}
           />
           {exportToast && (

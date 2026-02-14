@@ -62,7 +62,9 @@ body {
   bottom: auto !important;
   left: auto !important;
   transform: none !important;
-  animation: none !important;
+  border-radius: 20px !important;
+  transform-origin: top right;
+  animation: profile-menu-in 0.2s ease-out !important;
   transition: none !important;
 }
 
@@ -73,13 +75,14 @@ body {
   padding: 0;
   gap: 0;
   overflow: hidden;
-  animation: profile-menu-in 0.15s ease-out !important;
+  border-radius: 20px !important;
+  animation: none !important;
   transition: none !important;
 }
 
 @keyframes profile-menu-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; scale: 0.95; }
+  to { opacity: 1; scale: 1; }
 }
 
 .profile-menu-button-wrapper .gds-menu-item {
@@ -485,9 +488,15 @@ body {
   width: 960px;
   height: 660px;
   border: none;
-  border-radius: var(--radius-medium);
+  border-radius: 20px;
   background-color: var(--color-background-base-default);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+  animation: modal-scale-in 0.2s ease-out;
+}
+
+@keyframes modal-scale-in {
+  from { opacity: 0; scale: 0.95; }
+  to { opacity: 1; scale: 1; }
 }
 
 /* ── settings.localhost full-page layout ── */
@@ -691,5 +700,53 @@ button[aria-expanded="true"],
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
+}
+
+/* ── Product switcher ── */
+
+.product-switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-medium);
+  padding: 2px;
+  position: relative;
+}
+
+.product-switcher-indicator {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 32px;
+  height: 32px;
+  border-radius: calc(var(--radius-medium) - 2px);
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease-out;
+  z-index: 0;
+}
+
+.product-switcher-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: calc(var(--radius-medium) - 2px);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  position: relative;
+  z-index: 1;
+}
+
+.product-switcher-btn:hover path[fill] {
+  fill: #000 !important;
+}
+
+.product-switcher-active path[fill] {
+  fill: #000 !important;
 }
 
