@@ -63,7 +63,7 @@ body {
   left: auto !important;
   transform: none !important;
   border-radius: 20px !important;
-  transform-origin: top right;
+  transform-origin: top right !important;
   animation: profile-menu-in 0.2s ease-out !important;
   transition: none !important;
 }
@@ -81,8 +81,9 @@ body {
 }
 
 @keyframes profile-menu-in {
-  from { opacity: 0; scale: 0.95; }
-  to { opacity: 1; scale: 1; }
+  0% { opacity: 0; scale: 0; }
+  50% { opacity: 0.5; scale: 0.5; }
+  100% { opacity: 1; scale: 1; }
 }
 
 .profile-menu-button-wrapper .gds-menu-item {
@@ -485,18 +486,18 @@ body {
 }
 
 .settings-iframe {
-  width: 960px;
-  height: 660px;
+  width: min(960px, 90vw);
+  height: min(720px, 85vh);
   border: none;
   border-radius: 20px;
   background-color: var(--color-background-base-default);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
-  animation: modal-scale-in 0.2s ease-out;
+  animation: modal-scale-in 0.3s ease-out;
 }
 
 @keyframes modal-scale-in {
-  from { opacity: 0; scale: 0.95; }
-  to { opacity: 1; scale: 1; }
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* ── settings.localhost full-page layout ── */

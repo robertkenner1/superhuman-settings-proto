@@ -841,9 +841,6 @@ function SettingsContent({ teams, product = 'mail' }: {
           )}
 
         </ul>
-        <div style={{ marginTop: 'auto', padding: 'var(--space-3) var(--space-2)' }}>
-          <Text as="p" variant="text-xsmall" color="base-subdued">Superhuman v1.0</Text>
-        </div>
       </nav>
 
       <div ref={contentRef} className={`settings-content${fading ? ' settings-content-fading' : ''}`} style={{ flex: 1, minWidth: 0 }}>

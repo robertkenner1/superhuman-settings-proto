@@ -1,6 +1,10 @@
 node_modules/*
 !node_modules/@grammarly
 /dist
-docs
 .DS_Store
 tsconfig.tsbuildinfo
+
+# Claude Code meta (local only)
+CLAUDE.md
+docs/VISION.md
+docs/CHANGELOG.md
