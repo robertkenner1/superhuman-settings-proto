@@ -130,7 +130,7 @@ function getRoute(): string {
   }
   // Path-based: /home, /settings, /id, /account, /admin, /components
   const path = window.location.pathname.split('/')[1] || ''
-  return path || 'home'
+  return path || 'app'
 }
 
 function getPlanFromUrl(): Plan {
@@ -145,6 +145,15 @@ function getProductFromUrl(): Product {
   const p = params.get('product')
   if (p === 'mail' || p === 'calendar' || p === 'docs' || p === 'grammarly') return p
   return 'mail'
+}
+
+type ViewMode = 'modal' | 'page'
+
+function getViewFromUrl(): ViewMode {
+  const params = new URLSearchParams(window.location.search)
+  const v = params.get('view')
+  if (v === 'page') return 'page'
+  return 'modal'
 }
 
 const PRODUCT_NAV_CONFIG: Record<Product, {
@@ -747,9 +756,10 @@ function StubSettingsPage({ tabId }: { tabId: SettingsTab }) {
 
 // ── Settings content (shared between settings.localhost and the old modal) ──
 
-function SettingsContent({ teams, product = 'mail' }: {
+function SettingsContent({ teams, product = 'mail', onBack }: {
   teams: Team[]
   product?: Product
+  onBack?: () => void
 }) {
   const productConfig = PRODUCT_NAV_CONFIG[product]
   const [activeTab, setActiveTab] = useState<SettingsTab>(productConfig.items[0].id)
@@ -833,6 +843,12 @@ function SettingsContent({ teams, product = 'mail' }: {
   return (
     <div style={{ display: 'flex', flex: 1, minHeight: 0, height: '100%', position: 'relative' }}>
       <nav className="settings-sidebar">
+        {onBack && (
+          <button className="settings-back-to-app" onClick={onBack}>
+            <Icon icon={CaretLargeLeftIcon} size="small" accessibilityLabel="" />
+            <Text as="span" variant="text-small">Back to app</Text>
+          </button>
+        )}
         <ul className="gds-menu-list settings-nav-list">
           <Menu.Section label={productConfig.sectionLabel}>{makeNavItems(productConfig.items)}</Menu.Section>
           <Menu.Section label="Account">{makeNavItems(accountItems)}</Menu.Section>
@@ -917,7 +933,7 @@ function AccountPage({ plan }: { plan: Plan }) {
   }
 
   return (
-    <StandalonePage title="Account Settings" backLabel="Back to app" backHref={urlWithPlan('home', plan)}>
+    <StandalonePage title="Account Settings" backLabel="Back to app" backHref={urlWithPlan('app', plan)}>
       {renderSection()}
     </StandalonePage>
   )
@@ -986,7 +1002,7 @@ function AdminPage({ plan }: { plan: Plan }) {
 
   if (!team) {
     return (
-      <StandalonePage title="Workspace Admin" backLabel="Back to app" backHref={urlWithPlan('home', plan)}>
+      <StandalonePage title="Workspace Admin" backLabel="Back to app" backHref={urlWithPlan('app', plan)}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', paddingTop: 'var(--space-4)' }}>
           <PageTitle title="No workspace" />
           <Text as="p" variant="text-small" color="base-subdued">
@@ -1003,7 +1019,7 @@ function AdminPage({ plan }: { plan: Plan }) {
   ]
 
   return (
-    <StandalonePage title="Workspace Admin" backLabel="Back to app" backHref={urlWithPlan('home', plan)}>
+    <StandalonePage title="Workspace Admin" backLabel="Back to app" backHref={urlWithPlan('app', plan)}>
       <PageTitle title={team.name} />
       <SectionTabBar tabs={adminTabs} activeTab={section} plan={plan} teamId={team.id} subdomain="admin" />
       {section === 'members' && <AdminMembersSection team={team} members={members} invites={invites} />}
@@ -1016,10 +1032,16 @@ function AdminPage({ plan }: { plan: Plan }) {
 
 function SettingsPage({ plan }: { plan: Plan }) {
   const teams = DEMO_TEAMS[plan]
+  const isIframed = window.parent !== window
+  const viewMode = getViewFromUrl()
 
   const handleClose = useCallback(() => {
-    window.parent.postMessage({ type: 'close' }, '*')
-  }, [])
+    if (isIframed) {
+      window.parent.postMessage({ type: 'close' }, '*')
+    } else {
+      window.location.href = urlWithPlan('app', plan, `&view=${viewMode}`)
+    }
+  }, [isIframed, plan, viewMode])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -1030,11 +1052,13 @@ function SettingsPage({ plan }: { plan: Plan }) {
   }, [handleClose])
 
   return (
-    <div className="settings-page">
-      <button className="settings-page-close" onClick={handleClose} aria-label="Close settings">
-        <Icon icon={XIcon} size="small" accessibilityLabel="Close" />
-      </button>
-      <SettingsContent teams={teams} product={getProductFromUrl()} />
+    <div className={`settings-page${!isIframed ? ' page-fade-in' : ''}`}>
+      {isIframed && (
+        <button className="settings-page-close" onClick={handleClose} aria-label="Close settings">
+          <Icon icon={XIcon} size="small" accessibilityLabel="Close" />
+        </button>
+      )}
+      <SettingsContent teams={teams} product={getProductFromUrl()} onBack={!isIframed ? handleClose : undefined} />
     </div>
   )
 }
@@ -1119,7 +1143,7 @@ function ProductSwitcher({ active, onChange }: { active: Product; onChange: (p: 
   )
 }
 
-// ── home.localhost — main app shell with iframe modal ──
+// ── app.localhost — main app shell ──
 
 function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Plan) => void }) {
   const [isSignedIn, setIsSignedIn] = useState(true)
@@ -1127,6 +1151,7 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
   const [exportToast, setExportToast] = useState(false)
   const [signInOpen, setSignInOpen] = useState(false)
   const [activeProduct, setActiveProduct] = useState<Product>('grammarly')
+  const viewMode = getViewFromUrl()
 
   useEffect(() => {
     document.title = settingsOpen ? 'Settings — Superhuman' : 'Superhuman'
@@ -1184,7 +1209,7 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
   }, [isSignedIn, settingsOpen])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <div className="page-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)', backgroundColor: 'transparent', borderBottom: 'none', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <Logo brand="superhuman" composition="mark" variant="color-secondary" accessibilityLabel="Superhuman" style={{ width: 32, height: 32 }} />
@@ -1212,7 +1237,13 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
                   <PlanTag variant={plan} size="xsmall" title={plan} />
                 </div>
               </div>
-              <Menu.Item key="settings" icon={GearIcon} onClick={() => setSettingsOpen(true)}>Settings</Menu.Item>
+              <Menu.Item key="settings" icon={GearIcon} onClick={() => {
+                if (viewMode === 'page') {
+                  window.location.href = urlWithPlan('settings', plan, `&product=${activeProduct}&view=page`)
+                } else {
+                  setSettingsOpen(true)
+                }
+              }}>Settings</Menu.Item>
               <div className="profile-menu-divider" />
               <Menu.Item key="signout" icon={ArrowRightRectangleIcon} onClick={handleSignOut}>Sign out</Menu.Item>
             </Menu>
@@ -1392,7 +1423,7 @@ function App() {
 
   const handleSignIn = (plan: Plan) => {
     setDemoPlan(plan)
-    window.location.href = urlWithPlan('home', plan)
+    window.location.href = urlWithPlan('app', plan)
   }
 
   switch (subdomain) {
@@ -1403,7 +1434,7 @@ function App() {
         </ThemeProvider>
       )
 
-    case 'home':
+    case 'app':
       return (
         <ThemeProvider theme="superhuman" style={{ minHeight: '100vh', backgroundColor: 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
           <HomePage plan={demoPlan} onPlanChange={handlePlanChange} />
@@ -1440,7 +1471,7 @@ function App() {
 
     default:
       // Fallback: redirect to home
-      window.location.href = urlWithPlan('home', demoPlan)
+      window.location.href = urlWithPlan('app', demoPlan)
       return null
   }
 }
