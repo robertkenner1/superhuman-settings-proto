@@ -1492,12 +1492,14 @@ function App() {
         </ThemeProvider>
       )
 
-    case 'components':
+    case 'components': {
+      const isEmbedded = new URLSearchParams(window.location.search).has('embed')
       return (
-        <ThemeProvider theme="superhuman" mode="light" style={{ minHeight: '100vh', backgroundColor: 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
+        <ThemeProvider theme="superhuman" mode="light" style={{ minHeight: '100vh', backgroundColor: isEmbedded ? 'transparent' : 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
           <ComponentsPage />
         </ThemeProvider>
       )
+    }
 
     default:
       // Fallback: redirect to home
