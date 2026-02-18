@@ -1208,6 +1208,36 @@ function HomePage({ plan, onPlanChange }: { plan: Plan; onPlanChange: (plan: Pla
     return () => window.removeEventListener('keydown', handler)
   }, [isSignedIn, settingsOpen])
 
+  // Demo mode: auto-click avatar → settings when loaded with ?demo=true
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('demo') !== 'true' || !isSignedIn) return
+
+    // Notify parent that demo is starting
+    if (window.parent !== window) {
+      setTimeout(() => window.parent.postMessage({ type: 'demo-start' }, '*'), 500)
+    }
+
+    // Step 1: Click profile menu button
+    const t1 = setTimeout(() => {
+      const btn = document.querySelector('.profile-menu-button-wrapper button') as HTMLElement
+      if (btn) btn.click()
+    }, 2000)
+
+    // Step 2: Click Settings menu item
+    const t2 = setTimeout(() => {
+      const items = document.querySelectorAll('[role="menuitem"]')
+      for (const item of items) {
+        if (item.textContent?.trim() === 'Settings') {
+          (item as HTMLElement).click()
+          break
+        }
+      }
+    }, 3500)
+
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [isSignedIn])
+
   return (
     <div className="page-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)', backgroundColor: 'transparent', borderBottom: 'none', flexShrink: 0 }}>
