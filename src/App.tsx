@@ -1429,42 +1429,42 @@ function App() {
   switch (subdomain) {
     case 'id':
       return (
-        <ThemeProvider theme="superhuman" style={{ minHeight: '100vh', backgroundColor: 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
+        <ThemeProvider theme="superhuman" mode="light" style={{ minHeight: '100vh', backgroundColor: 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
           <SignInPage onSignIn={handleSignIn} />
         </ThemeProvider>
       )
 
     case 'app':
       return (
-        <ThemeProvider theme="superhuman" style={{ minHeight: '100vh', backgroundColor: 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
+        <ThemeProvider theme="superhuman" mode="light" style={{ minHeight: '100vh', backgroundColor: 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
           <HomePage plan={demoPlan} onPlanChange={handlePlanChange} />
         </ThemeProvider>
       )
 
     case 'settings':
       return (
-        <ThemeProvider theme="superhuman" style={{ minHeight: '100vh', fontFamily: 'var(--font-stack-inter)' }}>
+        <ThemeProvider theme="superhuman" mode="light" style={{ minHeight: '100vh', fontFamily: 'var(--font-stack-inter)' }}>
           <SettingsPage plan={demoPlan} />
         </ThemeProvider>
       )
 
     case 'account':
       return (
-        <ThemeProvider theme="superhuman" style={{ minHeight: '100vh', backgroundColor: 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
+        <ThemeProvider theme="superhuman" mode="light" style={{ minHeight: '100vh', backgroundColor: 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
           <AccountPage plan={demoPlan} />
         </ThemeProvider>
       )
 
     case 'admin':
       return (
-        <ThemeProvider theme="superhuman" style={{ minHeight: '100vh', backgroundColor: 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
+        <ThemeProvider theme="superhuman" mode="light" style={{ minHeight: '100vh', backgroundColor: 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
           <AdminPage plan={demoPlan} />
         </ThemeProvider>
       )
 
     case 'components':
       return (
-        <ThemeProvider theme="superhuman" style={{ minHeight: '100vh', backgroundColor: 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
+        <ThemeProvider theme="superhuman" mode="light" style={{ minHeight: '100vh', backgroundColor: 'var(--color-background-base-subdued)', fontFamily: 'var(--font-stack-inter)' }}>
           <ComponentsPage />
         </ThemeProvider>
       )
