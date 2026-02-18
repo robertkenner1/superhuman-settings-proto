@@ -8,3 +8,7 @@ tsconfig.tsbuildinfo
 CLAUDE.md
 docs/VISION.md
 docs/CHANGELOG.md
+
+# Internal docs (not for public repo)
+docs/*.pdf
+docs/cross-product-settings-audit.md

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cross-Product Settings Audit</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: #f7f7f7;
+    color: #1a1a1a;
+    padding: 48px 32px;
+  }
+
+  .page { max-width: 960px; margin: 0 auto; }
+
+  .header { margin-bottom: 32px; }
+  .header h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+  .header .subtitle { font-size: 13px; color: #666; margin-top: 4px; line-height: 1.5; }
+
+  /* Summary cards */
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .summary-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .summary-card .label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #999;
+    margin-bottom: 4px;
+  }
+  .summary-card .value {
+    font-size: 24px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .summary-card .detail {
+    font-size: 11px;
+    color: #999;
+    margin-top: 2px;
+  }
+
+  /* Table */
+  .table-wrap {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 9px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #888;
+    white-space: nowrap;
+  }
+  th.col-setting { text-align: left; min-width: 200px; }
+  th.col-scope { text-align: left; width: 110px; }
+  th.col-product { text-align: center; width: 100px; }
+
+  /* Tier group header */
+  tr.tier td {
+    padding: 20px 14px 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    background: #f5f5f5;
+    border-top: 1px solid #e0e0e0;
+    letter-spacing: -0.1px;
+  }
+  tr.tier .tier-count {
+    font-weight: 400;
+    color: #999;
+    font-size: 12px;
+    margin-left: 6px;
+  }
+  tbody tr.tier:first-child td { border-top: none; }
+
+  /* Category header */
+  tr.category td {
+    padding: 10px 14px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #aaa;
+    background: #f5f5f5;
+  }
+
+  /* Setting rows */
+  tr.setting td {
+    padding: 5px 14px;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  tr.setting:nth-child(odd) td { background: #fff; }
+  tr.setting:nth-child(even) td { background: #fafafa; }
+  tr.setting:hover td { background: #f0f0f4; }
+  tr.setting td.name { color: #333; }
+
+  td.scope {
+    font-size: 11px;
+    color: #888;
+  }
+
+  td.check {
+    text-align: center;
+    vertical-align: middle;
+    font-size: 14px;
+    color: #ccc;
+  }
+  td.check.on { color: #1a1a1a; }
+
+  /* Scope tags */
+  .scope-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .scope-account { background: #EEF2FF; color: #4338CA; }
+  .scope-product { background: #F0FDF4; color: #15803D; }
+  .scope-org { background: #FFF7ED; color: #C2410C; }
+
+  /* Footer stats */
+  tr.totals td {
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    background: #fafafa;
+    border-top: 1px solid #e0e0e0;
+    font-variant-numeric: tabular-nums;
+  }
+  tr.totals td.check { color: #666; font-size: 12px; }
+
+  /* Findings section */
+  .findings {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .finding-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .finding-card h3 {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #999;
+    margin-bottom: 8px;
+  }
+  .finding-card p {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  /* Decision log */
+  .decision-log {
+    margin-top: 40px;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 28px;
+  }
+  .decision-log h2 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 12px;
+  }
+  .decision-log table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .decision-log thead th {
+    position: static;
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #999;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .decision-log tbody td {
+    padding: 10px 12px;
+    vertical-align: top;
+    color: #444;
+    line-height: 1.5;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .decision-log tbody td:first-child {
+    white-space: nowrap;
+    color: #999;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="header">
+    <h1>Cross-Product Settings Audit</h1>
+    <p class="subtitle">Every application-level and account-level setting across Superhuman Mail, Calendar, Docs (Coda), and Grammarly.</p>
+  </div>
+
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th class="col-setting">Setting</th>
+        <th class="col-scope">Scope</th>
+        <th class="col-product">Mail</th>
+        <th class="col-product">Calendar</th>
+        <th class="col-product">Docs</th>
+        <th class="col-product">Grammarly</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- SHARED ACROSS PRODUCTS -->
+      <tr class="tier"><td colspan="6">Shared across products</td></tr>
+
+      <tr class="category"><td colspan="6">Profile</td></tr>
+      <tr class="setting"><td class="name">Name</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+      <tr class="setting"><td class="name">Email</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+      <tr class="setting"><td class="name">Avatar</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+
+      <tr class="category"><td colspan="6">Account</td></tr>
+      <tr class="setting"><td class="name">Add Accounts</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+      <tr class="setting"><td class="name">Password & Security</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+
+      <tr class="category"><td colspan="6">Appearance</td></tr>
+      <tr class="setting"><td class="name">Theme / Dark Mode</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+
+      <tr class="category"><td colspan="6">Team / Admin</td></tr>
+      <tr class="setting"><td class="name">Members</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+      <tr class="setting"><td class="name">Invite</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+      <tr class="setting"><td class="name">Roles</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+
+      <tr class="category"><td colspan="6">Connected Accounts</td></tr>
+      <tr class="setting"><td class="name">Google</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check">&ndash;</td><td class="check">&ndash;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+      <tr class="setting"><td class="name">Microsoft</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check">&ndash;</td><td class="check">&ndash;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+      <tr class="setting"><td class="name">SSO</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check">&ndash;</td><td class="check">&ndash;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+
+      <tr class="category"><td colspan="6">Notifications</td></tr>
+      <tr class="setting"><td class="name">Email Notifications</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check">&ndash;</td><td class="check">&ndash;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+
+      <tr class="category"><td colspan="6">Billing</td></tr>
+      <tr class="setting"><td class="name">Plan</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check">&ndash;</td><td class="check">&ndash;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+      <tr class="setting"><td class="name">Payment Methods</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check">&ndash;</td><td class="check">&ndash;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+
+      <tr class="category"><td colspan="6">Security (Org)</td></tr>
+      <tr class="setting"><td class="name">SSO Enforcement</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check">&ndash;</td><td class="check">&ndash;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+      <tr class="setting"><td class="name">2FA Enforcement</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check">&ndash;</td><td class="check">&ndash;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+      <tr class="setting"><td class="name">Session Policies</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check">&ndash;</td><td class="check">&ndash;</td><td class="check on">&#10003;</td><td class="check on">&#10003;</td></tr>
+
+      <!-- MAIL + CALENDAR -->
+      <tr class="tier"><td colspan="6">Mail + Calendar</td></tr>
+
+      <tr class="category"><td colspan="6">Calendar</td></tr>
+      <tr class="setting"><td class="name">Secondary Timezone</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Meeting Links</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Add Calendar Account</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Event Notifications</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check on">&#10003;</td><td class="check on">&#10003;</td><td class="check"></td><td class="check"></td></tr>
+
+      <!-- MAIL ONLY -->
+      <tr class="tier"><td colspan="6">Mail only</td></tr>
+
+      <tr class="category"><td colspan="6">Superhuman AI</td></tr>
+      <tr class="setting"><td class="name">Autocomplete</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Autocorrect</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Auto Archive</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Auto Drafts</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Auto Labels</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Auto Label Library</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Write with AI</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Reminders</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Knowledge Base</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Split Inbox</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Split Inbox Library</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <tr class="category"><td colspan="6">Sales</td></tr>
+      <tr class="setting"><td class="name">HubSpot</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Pipedrive</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Salesforce</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Recent Opens</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <tr class="category"><td colspan="6">Workflow</td></tr>
+      <tr class="setting"><td class="name">Auto Advance</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Auto Bcc</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Blocked Senders</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Downloads</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Images</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Instant Intro</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Notifications</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Out of Office Reply</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <tr class="category"><td colspan="6">Triage</td></tr>
+      <tr class="setting"><td class="name">Get Me To Zero</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Bulk Actions</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <tr class="category"><td colspan="6">Writing</td></tr>
+      <tr class="setting"><td class="name">Emoji</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Signatures</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <tr class="category"><td colspan="6">Team Features</td></tr>
+      <tr class="setting"><td class="name">Team Snippets</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Team Read Statuses</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Team Reply Indicators</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <tr class="category"><td colspan="6">Learning</td></tr>
+      <tr class="setting"><td class="name">Shortcuts</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Start Tutorial</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Book Team Training</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Attend a Live Webinar</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Guides</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Quick Tips</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <tr class="category"><td colspan="6">Other</td></tr>
+      <tr class="setting"><td class="name">Achievements</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <tr class="category"><td colspan="6">Advanced</td></tr>
+      <tr class="setting"><td class="name">Backtick as Escape</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Send + Mark Done</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">RSVP + Mark Done</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Hide Comment Bar</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Show Sender Full Names</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <!-- GRAMMARLY ONLY -->
+      <tr class="tier"><td colspan="6">Grammarly only</td></tr>
+
+      <tr class="category"><td colspan="6">Writing Style</td></tr>
+      <tr class="setting"><td class="name">Personal Style</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Org Style Guide</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <tr class="category"><td colspan="6">Tools</td></tr>
+      <tr class="setting"><td class="name">Browser Extension</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Desktop App</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Integrations</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <tr class="category"><td colspan="6">Analytics</td></tr>
+      <tr class="setting"><td class="name">Writing Analytics</td><td class="scope"><span class="scope-tag scope-product">Product</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">ROI Reporting</td><td class="scope"><span class="scope-tag scope-org">Org</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <tr class="category"><td colspan="6">Data & Privacy</td></tr>
+      <tr class="setting"><td class="name">AI Data Usage</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+      <tr class="setting"><td class="name">Data Privacy</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+      <!-- DOCS ONLY -->
+      <tr class="tier"><td colspan="6">Docs only</td></tr>
+
+      <tr class="category"><td colspan="6">Developer</td></tr>
+      <tr class="setting"><td class="name">API Tokens</td><td class="scope"><span class="scope-tag scope-account">Account</span></td><td class="check"></td><td class="check"></td><td class="check"></td><td class="check"></td></tr>
+
+    </tbody>
+  </table>
+  </div>
+
+  <div class="decision-log">
+    <h2>Decision Log</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; min-width: 100px;">Date</th>
+          <th style="text-align: left;">Decision</th>
+          <th style="text-align: left;">Rationale</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Feb 14, 2026</td>
+          <td>Calendar inherits account-scoped and team/admin settings from Mail</td>
+          <td>Calendar and Mail share the same account and org, so account-scoped settings that Mail has (Profile, Add Accounts, Password & Security, Theme) and org-scoped team settings (Members, Invite, Roles) logically apply to Calendar too. Other org-scoped settings (Billing, Security) and account-scoped settings Mail doesn't surface (Connected Accounts, Notifications) stay as dashes.</td>
+        </tr>
+        <tr>
+          <td>Feb 14, 2026</td>
+          <td>Single-product tiers show no checks</td>
+          <td>The tier header already identifies which product owns those settings (e.g., "Mail only"). Showing a check under the obvious product column is redundant — the grouping alone communicates ownership.</td>
+        </tr>
+        <tr>
+          <td>Feb 14, 2026</td>
+          <td>Go column removed</td>
+          <td>Go is a new product with TBD settings. Including it with question marks or dashes adds noise without information. Will re-add once Go's settings surface is defined.</td>
+        </tr>
+        <tr>
+          <td>Feb 14, 2026</td>
+          <td>Standalone HTML over React component</td>
+          <td>The audit table is a reference artifact, not a product feature. A zero-dependency HTML file is cheaper to produce, easier to share, and doesn't add build complexity to the prototype.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+</body>
+</html>
